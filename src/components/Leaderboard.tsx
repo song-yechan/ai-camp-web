@@ -7,6 +7,7 @@ import CompareModal from "./CompareModal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard";
 import AnimatedList from "@/components/reactbits/AnimatedList";
 import { DUMMY_LEADERBOARD } from "@/lib/dummy-data";
+import { getCategoriesByGroup, getCategoryById } from "@/lib/job-categories";
 
 type Category = "all" | "camp" | "non-dev" | "dev";
 type Period = "today" | "week" | "all";
@@ -39,12 +40,13 @@ const CATEGORY_TABS: { key: Category; label: string }[] = [
 ];
 
 const DEV_DEPARTMENTS = [
-  "\uC804\uCCB4", "Engineering", "Data", "DevOps",
+  "\uC804\uCCB4",
+  ...getCategoriesByGroup("developer").map((c) => c.id),
 ];
 
 const NON_DEV_DEPARTMENTS = [
-  "\uC804\uCCB4", "PM", "CSM", "CSE", "CS", "Marketing", "Sales",
-  "Product", "Product Writing", "RevOps",
+  "\uC804\uCCB4",
+  ...getCategoriesByGroup("non-developer").map((c) => c.id),
 ];
 
 const PERIOD_TABS: { key: Period; label: string }[] = [
@@ -220,12 +222,16 @@ function LeaderboardRow({
         {rank}
       </span>
 
-      {/* Name + Avatar + Cohort + Streak */}
-      <div className="flex flex-1 items-center gap-3 overflow-hidden">
-        <Avatar url={entry.avatar_url} name={entry.name} size={32} />
+      {/* Name + Department + Cohort + Streak */}
+      <div className="flex flex-1 items-center gap-2 overflow-hidden">
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm text-camp-text">{entry.name}</span>
+            {entry.department && (
+              <span className="shrink-0 rounded bg-white/5 px-2 py-0.5 text-xs text-zinc-400">
+                {getCategoryById(entry.department)?.label ?? entry.department}
+              </span>
+            )}
+            <span className="truncate text-sm font-semibold text-camp-text">{entry.name}</span>
             <CohortPill cohort={entry.cohort} show={showCohort} />
           </div>
           {entry.current_streak !== undefined && entry.current_streak > 0 && (
@@ -243,17 +249,9 @@ function LeaderboardRow({
         <CountUp end={entry.total_cost} prefix="$" decimals={2} />
       </span>
 
-      {/* Sessions or Commits+PR based on role */}
+      {/* Sessions */}
       <span className="hidden w-24 text-right font-mono text-sm tabular-nums text-camp-text-secondary sm:block">
-        {isDev ? (
-          <span title="commits / PRs">
-            <CountUp end={entry.commits ?? 0} />
-            {" / "}
-            <CountUp end={entry.pull_requests ?? 0} />
-          </span>
-        ) : (
-          <CountUp end={entry.sessions_count} />
-        )}
+        <CountUp end={entry.sessions_count} />
       </span>
     </div>
   );
@@ -404,7 +402,7 @@ export default function Leaderboard() {
                       : "text-camp-text-muted hover:text-camp-text-secondary"
                   }`}
                 >
-                  {dept}
+                  {dept === "\uC804\uCCB4" ? "\uC804\uCCB4" : (getCategoryById(dept)?.label ?? dept)}
                 </button>
               ))}
             </div>
@@ -485,16 +483,9 @@ export default function Leaderboard() {
                     {/* Medal */}
                     <span className="text-2xl">{meta.medal}</span>
 
-                    {/* Avatar */}
-                    <Avatar
-                      url={entry.avatar_url}
-                      name={entry.name}
-                      size={rank === 1 ? 64 : 52}
-                    />
-
                     {/* Name + Cohort */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-semibold text-camp-text">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="truncate text-2xl font-bold text-camp-text">
                         {entry.name}
                       </span>
                       <CohortPill cohort={entry.cohort} show={showCohort} />
@@ -525,18 +516,10 @@ export default function Leaderboard() {
                       </div>
                       <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-white/[0.03] px-3 py-2.5">
                         <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
-                          {isDev ? "commits / PR" : "sessions"}
+                          sessions
                         </span>
                         <span className="font-mono text-base font-bold tabular-nums text-camp-text">
-                          {isDev ? (
-                            <>
-                              <CountUp end={entry.commits ?? 0} />
-                              {" / "}
-                              <CountUp end={entry.pull_requests ?? 0} />
-                            </>
-                          ) : (
-                            <CountUp end={entry.sessions_count} />
-                          )}
+                          <CountUp end={entry.sessions_count} />
                         </span>
                       </div>
                     </div>

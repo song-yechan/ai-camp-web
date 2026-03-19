@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { getCategoryById } from "@/lib/job-categories";
 
 async function getSessionUserId(): Promise<string | null> {
   const cookieStore = await cookies();
@@ -17,14 +18,25 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { role } = body as { role?: string };
+  const { department } = body as { department?: string };
 
-  if (role !== "developer" && role !== "non-developer") {
+  if (!department) {
     return NextResponse.json(
-      { error: "role must be 'developer' or 'non-developer'" },
-      { status: 400 }
+      { error: "department is required" },
+      { status: 400 },
     );
   }
+
+  const category = getCategoryById(department);
+
+  if (!category) {
+    return NextResponse.json(
+      { error: "Invalid department" },
+      { status: 400 },
+    );
+  }
+
+  const role = category.group;
 
   const supabase = await createServiceSupabase();
 
@@ -32,14 +44,15 @@ export async function POST(request: NextRequest) {
     .from("users")
     .update({
       role,
+      department,
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId);
 
   if (error) {
     return NextResponse.json(
-      { error: "Failed to update role" },
-      { status: 500 }
+      { error: "Failed to update user" },
+      { status: 500 },
     );
   }
 
