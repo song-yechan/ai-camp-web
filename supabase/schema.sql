@@ -5,16 +5,16 @@ create table users (
   id uuid primary key default gen_random_uuid(),
   slack_id text unique not null,
   slack_team_id text not null,
+  email text,
   name text not null,
   avatar_url text,
   role text check (role in ('developer', 'non-developer')) default 'non-developer',
   cohort integer default 2,
-  api_token text unique default gen_random_uuid()::text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
--- 일별 사용량 (launchd에서 자동 전송)
+-- 일별 사용량 (Claude Code Analytics API에서 자동 수집)
 create table usage_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references users(id) on delete cascade,
@@ -25,6 +25,10 @@ create table usage_logs (
   cache_read_tokens bigint default 0,
   total_cost numeric(10, 4) default 0,
   sessions_count integer default 0,
+  lines_added integer default 0,
+  lines_removed integer default 0,
+  commits integer default 0,
+  pull_requests integer default 0,
   synced_at timestamptz default now(),
   unique(user_id, date)
 );
