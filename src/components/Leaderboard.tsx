@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import CountUp from "./CountUp";
+import CompareModal from "./CompareModal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard";
 import AnimatedList from "@/components/reactbits/AnimatedList";
 import { DUMMY_LEADERBOARD } from "@/lib/dummy-data";
 
-type Category = "all" | "cohort1" | "cohort2" | "non-dev" | "dev";
+type Category = "all" | "camp" | "non-dev" | "dev";
 type Period = "today" | "week" | "all";
 
 interface LeaderboardEntry {
@@ -30,8 +31,7 @@ const COHORTS: Record<string, number> = {
 
 const CATEGORY_TABS: { key: Category; label: string }[] = [
   { key: "all", label: "\uC804\uCCB4" },
-  { key: "cohort1", label: "1\uAE30" },
-  { key: "cohort2", label: "2\uAE30" },
+  { key: "camp", label: "\uCEA0\uD504" },
   { key: "non-dev", label: "\uBE44\uAC1C\uBC1C\uC790" },
   { key: "dev", label: "\uAC1C\uBC1C\uC790" },
 ];
@@ -58,10 +58,8 @@ function filterByCategory(entries: LeaderboardEntry[], category: Category): Lead
   switch (category) {
     case "all":
       return entries;
-    case "cohort1":
-      return entries.filter((e) => e.cohort === 1);
-    case "cohort2":
-      return entries.filter((e) => e.cohort === 2);
+    case "camp":
+      return entries.filter((e) => e.cohort != null);
     case "dev":
       return entries.filter((e) => e.role === "developer");
     case "non-dev":
@@ -240,9 +238,10 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [animationKey, setAnimationKey] = useState(0);
   const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
-  // Map category to API-compatible values; cohort tabs are filtered client-side
-  const apiCategory = category === "cohort1" || category === "cohort2" ? "all" : category;
+  // Map category to API-compatible values; camp tab is filtered client-side
+  const apiCategory = category === "camp" ? "all" : category;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -276,8 +275,8 @@ export default function Leaderboard() {
     fetchData();
   }, [fetchData]);
 
-  // Apply category filter client-side for cohort tabs
-  const data = (category === "cohort1" || category === "cohort2")
+  // Apply category filter client-side for camp tab
+  const data = category === "camp"
     ? filterByCategory(rawData, category)
     : rawData;
 
@@ -303,7 +302,7 @@ export default function Leaderboard() {
 
   function handleCompare() {
     if (compareIds.length === 2) {
-      router.push(`/compare?a=${compareIds[0]}&b=${compareIds[1]}`);
+      setShowCompareModal(true);
     }
   }
 
@@ -508,7 +507,7 @@ export default function Leaderboard() {
       )}
 
       {/* Floating compare button */}
-      {compareIds.length === 2 && (
+      {compareIds.length === 2 && !showCompareModal && (
         <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 md:bottom-8">
           <button
             type="button"
@@ -518,6 +517,15 @@ export default function Leaderboard() {
             {compareNames[0]} vs {compareNames[1]} 비교하기
           </button>
         </div>
+      )}
+
+      {/* Compare modal */}
+      {showCompareModal && compareIds.length === 2 && (
+        <CompareModal
+          idA={compareIds[0]}
+          idB={compareIds[1]}
+          onClose={() => setShowCompareModal(false)}
+        />
       )}
     </div>
   );

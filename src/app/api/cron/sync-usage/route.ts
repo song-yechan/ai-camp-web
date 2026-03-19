@@ -98,25 +98,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 어제 날짜 (자정에 실행되므로 어제 데이터 수집)
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const date = yesterday.toISOString().split("T")[0];
-
-  let records: ClaudeCodeAnalyticsRecord[];
-  try {
-    records = await fetchAllPages(date);
-  } catch (error) {
-    console.error("Failed to fetch analytics:", error);
-    return NextResponse.json(
-      { error: String(error) },
-      { status: 500 }
-    );
-  }
-
-  if (records.length === 0) {
-    return NextResponse.json({ date, synced: 0, skipped: 0, total: 0 });
-  }
+  // 오늘 + 어제 둘 다 sync (어제 데이터가 자정 이후에 완성될 수 있으며, 6시간마다 오늘 데이터 점진 반영)
+  const today = new Date().toISOString().split("T")[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const dates = [yesterday, today];
 
   const supabase = await createServiceSupabase();
 
@@ -129,68 +114,81 @@ export async function GET(request: Request) {
     (users ?? []).map((u) => [u.email, u.id])
   );
 
-  let synced = 0;
-  let skipped = 0;
+  let totalSynced = 0;
+  let totalSkipped = 0;
+  let totalRecords = 0;
 
-  for (const record of records) {
-    // user_actor만 처리 (api_actor는 스킵)
-    if (record.actor.type !== "user_actor") {
-      skipped++;
+  for (const date of dates) {
+    let records: ClaudeCodeAnalyticsRecord[];
+    try {
+      records = await fetchAllPages(date);
+    } catch (error) {
+      console.error(`Failed to fetch analytics for ${date}:`, error);
       continue;
     }
 
-    const email = record.actor.email_address;
-    const userId = emailToUserId.get(email);
+    totalRecords += records.length;
 
-    if (!userId) {
-      skipped++;
-      continue;
-    }
+    for (const record of records) {
+      // user_actor만 처리 (api_actor는 스킵)
+      if (record.actor.type !== "user_actor") {
+        totalSkipped++;
+        continue;
+      }
 
-    // 모델별 토큰/비용 합산
-    let inputTokens = 0;
-    let outputTokens = 0;
-    let cacheReadTokens = 0;
-    let cacheCreationTokens = 0;
-    let totalCostCents = 0;
+      const email = record.actor.email_address;
+      const userId = emailToUserId.get(email);
 
-    for (const model of record.model_breakdown) {
-      inputTokens += model.tokens.input;
-      outputTokens += model.tokens.output;
-      cacheReadTokens += model.tokens.cache_read;
-      cacheCreationTokens += model.tokens.cache_creation;
-      totalCostCents += model.estimated_cost.amount;
-    }
+      if (!userId) {
+        totalSkipped++;
+        continue;
+      }
 
-    const { error } = await supabase.from("usage_logs").upsert(
-      {
-        user_id: userId,
-        date,
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        cache_creation_tokens: cacheCreationTokens,
-        cache_read_tokens: cacheReadTokens,
-        total_cost: totalCostCents / 100, // cents → dollars
-        sessions_count: record.core_metrics.num_sessions,
-        lines_added: record.core_metrics.lines_of_code.added,
-        lines_removed: record.core_metrics.lines_of_code.removed,
-        commits: record.core_metrics.commits_by_claude_code,
-        pull_requests: record.core_metrics.pull_requests_by_claude_code,
-      },
-      { onConflict: "user_id,date" }
-    );
+      // 모델별 토큰/비용 합산
+      let inputTokens = 0;
+      let outputTokens = 0;
+      let cacheReadTokens = 0;
+      let cacheCreationTokens = 0;
+      let totalCostCents = 0;
 
-    if (error) {
-      console.error(`Failed to upsert for ${email}:`, error);
-    } else {
-      synced++;
+      for (const model of record.model_breakdown) {
+        inputTokens += model.tokens.input;
+        outputTokens += model.tokens.output;
+        cacheReadTokens += model.tokens.cache_read;
+        cacheCreationTokens += model.tokens.cache_creation;
+        totalCostCents += model.estimated_cost.amount;
+      }
+
+      const { error } = await supabase.from("usage_logs").upsert(
+        {
+          user_id: userId,
+          date: record.date,
+          input_tokens: inputTokens,
+          output_tokens: outputTokens,
+          cache_creation_tokens: cacheCreationTokens,
+          cache_read_tokens: cacheReadTokens,
+          total_cost: totalCostCents / 100, // cents → dollars
+          sessions_count: record.core_metrics.num_sessions,
+          lines_added: record.core_metrics.lines_of_code.added,
+          lines_removed: record.core_metrics.lines_of_code.removed,
+          commits: record.core_metrics.commits_by_claude_code,
+          pull_requests: record.core_metrics.pull_requests_by_claude_code,
+        },
+        { onConflict: "user_id,date" }
+      );
+
+      if (error) {
+        console.error(`Failed to upsert for ${email} on ${date}:`, error);
+      } else {
+        totalSynced++;
+      }
     }
   }
 
   return NextResponse.json({
-    date,
-    synced,
-    skipped,
-    total: records.length,
+    dates,
+    synced: totalSynced,
+    skipped: totalSkipped,
+    total: totalRecords,
   });
 }

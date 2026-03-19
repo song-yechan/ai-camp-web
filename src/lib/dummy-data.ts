@@ -221,6 +221,27 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     ],
   },
   {
+    user_id: "9",
+    name: "\uBC15\uC218\uBBFC",
+    avatar_url: null,
+    role: "developer",
+    total_cost: 45.2,
+    sessions_count: 28,
+    input_tokens: 1300000,
+    output_tokens: 340000,
+    lines_added: 620,
+    lines_removed: 150,
+    commits: 5,
+    pull_requests: 1,
+    current_streak: 2,
+    max_streak: 4,
+    cohort: null,
+    badges: [
+      { badge_type: 'first_step', earned_at: '2026-03-10T09:00:00Z' },
+      { badge_type: 'code_pusher', earned_at: '2026-03-12T15:00:00Z' },
+    ],
+  },
+  {
     user_id: "8",
     name: "\uCD5C\uD604\uC885",
     avatar_url: null,
@@ -247,9 +268,9 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
 ];
 
 export const DUMMY_STATS = {
-  totalParticipants: 8,
-  totalCost: 2639,
-  totalSessions: 813,
+  totalParticipants: 9,
+  totalCost: 2684,
+  totalSessions: 841,
 };
 
 // 일별 사용 데이터 생성 (최근 30일)
@@ -309,4 +330,6 @@ export const DUMMY_DAILY_USAGE: DailyUsage[] = [
   ...generateDailyUsage('7', 3, 2, [0, 2, 3, 4, 5, 8, 9, 12, 13, 16, 17]),
   // 최현종 - 4일 연속
   ...generateDailyUsage('8', 3, 2, [4, 5, 10, 11, 15]),
+  // 박수민 - 2일 연속 (cohort null, 캠프 미참가)
+  ...generateDailyUsage('9', 1.5, 1, [0, 2, 3, 5, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22]),
 ];
