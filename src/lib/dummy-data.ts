@@ -22,6 +22,7 @@ export interface LeaderboardEntry {
   name: string;
   avatar_url: string | null;
   role: string;
+  department: string;
   total_cost: number;
   sessions_count: number;
   input_tokens: number;
@@ -51,6 +52,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uC1A1\uC608\uCC2C",
     avatar_url: null,
     role: "developer",
+    department: "Engineering",
     total_cost: 1554.48,
     sessions_count: 247,
     input_tokens: 45000000,
@@ -79,6 +81,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uC624\uB2F4\uC778",
     avatar_url: null,
     role: "non-developer",
+    department: "CSE",
     total_cost: 295.2,
     sessions_count: 142,
     input_tokens: 8500000,
@@ -104,6 +107,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uC11C\uD55C\uC194",
     avatar_url: null,
     role: "non-developer",
+    department: "Marketing",
     total_cost: 175.8,
     sessions_count: 98,
     input_tokens: 5200000,
@@ -128,6 +132,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uC624\uC601\uC8FC",
     avatar_url: null,
     role: "non-developer",
+    department: "Product Writing",
     total_cost: 156.4,
     sessions_count: 85,
     input_tokens: 4600000,
@@ -153,6 +158,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "David Kim",
     avatar_url: null,
     role: "developer",
+    department: "Product",
     total_cost: 142.9,
     sessions_count: 76,
     input_tokens: 4200000,
@@ -179,6 +185,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uC815\uC6B4\uCC44",
     avatar_url: null,
     role: "non-developer",
+    department: "CS",
     total_cost: 128.5,
     sessions_count: 68,
     input_tokens: 3800000,
@@ -203,6 +210,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uACE0\uC9C4\uD615",
     avatar_url: null,
     role: "non-developer",
+    department: "RevOps",
     total_cost: 98.3,
     sessions_count: 52,
     input_tokens: 2900000,
@@ -225,6 +233,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uBC15\uC218\uBBFC",
     avatar_url: null,
     role: "developer",
+    department: "Sales",
     total_cost: 45.2,
     sessions_count: 28,
     input_tokens: 1300000,
@@ -246,6 +255,7 @@ export const DUMMY_LEADERBOARD: LeaderboardEntry[] = [
     name: "\uCD5C\uD604\uC885",
     avatar_url: null,
     role: "developer",
+    department: "Engineering",
     total_cost: 87.6,
     sessions_count: 45,
     input_tokens: 2500000,

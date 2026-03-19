@@ -16,6 +16,7 @@ interface LeaderboardEntry {
   name: string;
   avatar_url: string | null;
   role: string;
+  department?: string;
   cohort?: number | null;
   total_cost: number;
   sessions_count: number;
@@ -23,6 +24,7 @@ interface LeaderboardEntry {
   output_tokens: number;
   current_streak?: number;
   commits?: number;
+  pull_requests?: number;
 }
 
 const COHORTS: Record<string, number> = {
@@ -34,6 +36,15 @@ const CATEGORY_TABS: { key: Category; label: string }[] = [
   { key: "camp", label: "\uCEA0\uD504" },
   { key: "non-dev", label: "\uBE44\uAC1C\uBC1C\uC790" },
   { key: "dev", label: "\uAC1C\uBC1C\uC790" },
+];
+
+const DEV_DEPARTMENTS = [
+  "\uC804\uCCB4", "Engineering", "Data", "DevOps",
+];
+
+const NON_DEV_DEPARTMENTS = [
+  "\uC804\uCCB4", "PM", "CSM", "CSE", "CS", "Marketing", "Sales",
+  "Product", "Product Writing", "RevOps",
 ];
 
 const PERIOD_TABS: { key: Period; label: string }[] = [
@@ -50,6 +61,7 @@ function enrichWithCohortAndStreak(entries: LeaderboardEntry[]): LeaderboardEntr
       cohort: e.cohort ?? COHORTS[e.user_id] ?? null,
       current_streak: e.current_streak ?? ((seed * 3 + 5) % 20),
       commits: e.commits ?? ((seed * 7 + 3) % 50),
+      pull_requests: e.pull_requests ?? ((seed * 2 + 1) % 15),
     };
   });
 }
@@ -67,6 +79,11 @@ function filterByCategory(entries: LeaderboardEntry[], category: Category): Lead
     default:
       return entries;
   }
+}
+
+function filterByDepartment(entries: LeaderboardEntry[], dept: string): LeaderboardEntry[] {
+  if (dept === "\uC804\uCCB4") return entries;
+  return entries.filter((e) => e.department === dept);
 }
 
 function getRankMeta(rank: number) {
@@ -109,8 +126,8 @@ function getRankMeta(rank: number) {
   return null;
 }
 
-function CohortPill({ cohort }: { cohort: number | null | undefined }) {
-  if (!cohort) return null;
+function CohortPill({ cohort, show }: { cohort: number | null | undefined; show: boolean }) {
+  if (!show || !cohort) return null;
   if (cohort === 1) {
     return (
       <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 py-px text-[10px] font-medium text-amber-400">
@@ -163,13 +180,17 @@ function LeaderboardRow({
   isCompareSelected,
   onToggleCompare,
   onNavigate,
+  showCohort,
 }: {
   entry: LeaderboardEntry;
   rank: number;
   isCompareSelected: boolean;
   onToggleCompare: (userId: string) => void;
   onNavigate: (userId: string) => void;
+  showCohort: boolean;
 }) {
+  const isDev = entry.role === "developer";
+
   return (
     <div
       className="glass-hover group flex cursor-pointer items-center rounded-xl px-4 py-3 transition-all duration-200"
@@ -205,7 +226,7 @@ function LeaderboardRow({
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-sm text-camp-text">{entry.name}</span>
-            <CohortPill cohort={entry.cohort} />
+            <CohortPill cohort={entry.cohort} show={showCohort} />
           </div>
           {entry.current_streak !== undefined && entry.current_streak > 0 && (
             <span className="text-[10px] text-camp-text-muted">
@@ -222,9 +243,17 @@ function LeaderboardRow({
         <CountUp end={entry.total_cost} prefix="$" decimals={2} />
       </span>
 
-      {/* Sessions */}
+      {/* Sessions or Commits+PR based on role */}
       <span className="hidden w-24 text-right font-mono text-sm tabular-nums text-camp-text-secondary sm:block">
-        <CountUp end={entry.sessions_count} />
+        {isDev ? (
+          <span title="commits / PRs">
+            <CountUp end={entry.commits ?? 0} />
+            {" / "}
+            <CountUp end={entry.pull_requests ?? 0} />
+          </span>
+        ) : (
+          <CountUp end={entry.sessions_count} />
+        )}
       </span>
     </div>
   );
@@ -233,6 +262,7 @@ function LeaderboardRow({
 export default function Leaderboard() {
   const router = useRouter();
   const [category, setCategory] = useState<Category>("all");
+  const [department, setDepartment] = useState<string>("\uC804\uCCB4");
   const [period, setPeriod] = useState<Period>("all");
   const [rawData, setRawData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -243,6 +273,13 @@ export default function Leaderboard() {
   // Map category to API-compatible values; camp tab is filtered client-side
   const apiCategory = category === "camp" ? "all" : category;
 
+  // Show cohort badge only on "camp" tab
+  const showCohort = category === "camp";
+
+  // Show department sub-filter for dev/non-dev tabs
+  const showDeptFilter = category === "dev" || category === "non-dev";
+  const deptOptions = category === "dev" ? DEV_DEPARTMENTS : NON_DEV_DEPARTMENTS;
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -251,7 +288,7 @@ export default function Leaderboard() {
         `/api/usage?period=${periodParam}&category=${apiCategory}`
       );
       if (!res.ok) {
-        setRawData(enrichWithCohortAndStreak(DUMMY_LEADERBOARD as LeaderboardEntry[]));
+        setRawData(enrichWithCohortAndStreak(DUMMY_LEADERBOARD as unknown as LeaderboardEntry[]));
         return;
       }
       const json = await res.json();
@@ -259,12 +296,12 @@ export default function Leaderboard() {
         ? json.leaderboard
         : [];
       if (leaderboard.length === 0) {
-        setRawData(enrichWithCohortAndStreak(DUMMY_LEADERBOARD as LeaderboardEntry[]));
+        setRawData(enrichWithCohortAndStreak(DUMMY_LEADERBOARD as unknown as LeaderboardEntry[]));
       } else {
         setRawData(enrichWithCohortAndStreak(leaderboard));
       }
     } catch {
-      setRawData(enrichWithCohortAndStreak(DUMMY_LEADERBOARD as LeaderboardEntry[]));
+      setRawData(enrichWithCohortAndStreak(DUMMY_LEADERBOARD as unknown as LeaderboardEntry[]));
     } finally {
       setLoading(false);
       setAnimationKey((prev) => prev + 1);
@@ -275,10 +312,18 @@ export default function Leaderboard() {
     fetchData();
   }, [fetchData]);
 
-  // Apply category filter client-side for camp tab
-  const data = category === "camp"
+  // Reset department filter when category changes
+  useEffect(() => {
+    setDepartment("\uC804\uCCB4");
+  }, [category]);
+
+  // Apply category filter client-side for camp tab, then department filter
+  const categoryFiltered = category === "camp"
     ? filterByCategory(rawData, category)
     : rawData;
+  const data = showDeptFilter
+    ? filterByDepartment(categoryFiltered, department)
+    : categoryFiltered;
 
   const podium = data.slice(0, 3);
   const rest = data.slice(3);
@@ -318,6 +363,7 @@ export default function Leaderboard() {
       isCompareSelected={compareIds.includes(entry.user_id)}
       onToggleCompare={handleToggleCompare}
       onNavigate={handleNavigate}
+      showCohort={showCohort}
     />
   ));
 
@@ -326,25 +372,47 @@ export default function Leaderboard() {
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Category tabs with underline */}
-        <div className="flex gap-0.5 overflow-x-auto">
-          {CATEGORY_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setCategory(tab.key)}
-              className={`tab-underline cursor-pointer whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors ${
-                category === tab.key
-                  ? "tab-underline-active text-camp-accent"
-                  : "text-camp-text-secondary hover:text-camp-text"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-0.5 overflow-x-auto">
+            {CATEGORY_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setCategory(tab.key)}
+                className={`tab-underline cursor-pointer whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors ${
+                  category === tab.key
+                    ? "tab-underline-active text-camp-accent"
+                    : "text-camp-text-secondary hover:text-camp-text"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Department sub-filter */}
+          {showDeptFilter && (
+            <div className="flex gap-1 overflow-x-auto pl-1">
+              {deptOptions.map((dept) => (
+                <button
+                  key={dept}
+                  type="button"
+                  onClick={() => setDepartment(dept)}
+                  className={`cursor-pointer whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${
+                    department === dept
+                      ? "bg-camp-accent/15 text-camp-accent"
+                      : "text-camp-text-muted hover:text-camp-text-secondary"
+                  }`}
+                >
+                  {dept}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Period pills */}
-        <div className="flex gap-1 rounded-lg bg-white/[0.03] p-1">
+        <div className="flex gap-1 self-start rounded-lg bg-white/[0.03] p-1 sm:self-auto">
           {PERIOD_TABS.map((tab) => (
             <button
               key={tab.key}
@@ -394,6 +462,7 @@ export default function Leaderboard() {
             const rank = index + 1;
             const meta = getRankMeta(rank)!;
             const isSelected = compareIds.includes(entry.user_id);
+            const isDev = entry.role === "developer";
             return (
               <div
                 key={entry.user_id}
@@ -428,7 +497,7 @@ export default function Leaderboard() {
                       <span className="truncate text-sm font-semibold text-camp-text">
                         {entry.name}
                       </span>
-                      <CohortPill cohort={entry.cohort} />
+                      <CohortPill cohort={entry.cohort} show={showCohort} />
                     </div>
 
                     {/* Streak */}
@@ -456,10 +525,18 @@ export default function Leaderboard() {
                       </div>
                       <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-white/[0.03] px-3 py-2.5">
                         <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
-                          sessions
+                          {isDev ? "commits / PR" : "sessions"}
                         </span>
                         <span className="font-mono text-base font-bold tabular-nums text-camp-text">
-                          <CountUp end={entry.sessions_count} />
+                          {isDev ? (
+                            <>
+                              <CountUp end={entry.commits ?? 0} />
+                              {" / "}
+                              <CountUp end={entry.pull_requests ?? 0} />
+                            </>
+                          ) : (
+                            <CountUp end={entry.sessions_count} />
+                          )}
                         </span>
                       </div>
                     </div>

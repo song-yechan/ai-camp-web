@@ -322,9 +322,14 @@ export default function CompareModal({ idA, idB, onClose }: CompareModalProps) {
 
             {/* Compare bars */}
             <div className="glass flex flex-col gap-5 rounded-2xl p-5">
-              <h2 className="text-sm font-semibold text-camp-text">스탯 비교</h2>
+              <div className="flex flex-col gap-1">
+                <h2 className="text-sm font-semibold text-camp-text">스탯 비교</h2>
+                <p className="text-[11px] text-camp-text-muted">
+                  총 사용 비용 기준으로 비교합니다
+                </p>
+              </div>
               <CompareBar
-                label="비용"
+                label="총 비용 ($)"
                 icon={"\uD83D\uDCB0"}
                 valueA={userA.total_cost}
                 valueB={userB.total_cost}
@@ -333,23 +338,25 @@ export default function CompareModal({ idA, idB, onClose }: CompareModalProps) {
                 format={(v) => `$${v.toFixed(2)}`}
               />
               <CompareBar
-                label="세션"
+                label="세션 수 (회)"
                 icon={"\uD83D\uDCCA"}
                 valueA={userA.sessions_count}
                 valueB={userB.sessions_count}
                 nameA={userA.name}
                 nameB={userB.name}
+                format={(v) => `${v}회`}
               />
               <CompareBar
-                label="커밋"
+                label="커밋 수 (개)"
                 icon={"\u2328\uFE0F"}
                 valueA={userA.commits}
                 valueB={userB.commits}
                 nameA={userA.name}
                 nameB={userB.name}
+                format={(v) => `${v}개`}
               />
               <CompareBar
-                label="스트릭"
+                label="스트릭 (일)"
                 icon={"\uD83D\uDD25"}
                 valueA={userA.current_streak}
                 valueB={userB.current_streak}

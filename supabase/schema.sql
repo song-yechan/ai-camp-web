@@ -9,6 +9,7 @@ create table users (
   name text not null,
   avatar_url text,
   role text check (role in ('developer', 'non-developer')) default 'non-developer',
+  department text,
   cohort integer default 2,
   max_streak integer default 0,
   created_at timestamptz default now(),

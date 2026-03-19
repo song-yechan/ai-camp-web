@@ -1,14 +1,18 @@
 import Leaderboard from "@/components/Leaderboard";
 import HeroStats from "@/components/HeroStats";
 import HeroTitle from "@/components/HeroTitle";
+import HeroParticles from "@/components/HeroParticles";
 import LiveIndicator from "@/components/LiveIndicator";
 
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center pb-20 md:pb-0">
       {/* Hero -- asymmetric layout */}
-      <section className="w-full max-w-5xl px-4 pt-16 pb-12 sm:pt-20 sm:pb-16">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+      <section className="relative w-full max-w-5xl px-4 pt-16 pb-12 sm:pt-20 sm:pb-16">
+        {/* Background particles */}
+        <HeroParticles />
+
+        <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
           {/* Left: Typography */}
           <div className="flex flex-col gap-4 lg:max-w-xl">
             <LiveIndicator />
@@ -16,9 +20,9 @@ export default function Home() {
             <HeroTitle />
 
             <p className="max-w-md text-base leading-relaxed text-zinc-100">
-              AI Camp 참여자들의 실시간 사용량을 확인하세요.
+              AB180 구성원들의 Claude Code 사용량을 실시간으로 확인하세요.
               <br className="hidden sm:block" />
-              매일 AI를 더 가까이, 더 자연스럽게.
+              더 많이 쓸수록, 더 빠르게 성장합니다.
             </p>
           </div>
 
