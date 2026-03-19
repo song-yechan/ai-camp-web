@@ -14,6 +14,10 @@ interface UserProfileProps {
     commits: number;
     current_streak: number;
     longest_streak: number;
+    input_tokens?: number;
+    output_tokens?: number;
+    cache_read_tokens?: number;
+    cache_creation_tokens?: number;
   };
 }
 
@@ -70,6 +74,49 @@ function RoleBadge({ role }: { role: string }) {
     <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-camp-text-secondary">
       {label}
     </span>
+  );
+}
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
+}
+
+function TotalTokens({ user }: { user: UserProfileProps["user"] }) {
+  const input = user.input_tokens ?? 0;
+  const output = user.output_tokens ?? 0;
+  const cacheRead = user.cache_read_tokens ?? 0;
+  const cacheCreation = user.cache_creation_tokens ?? 0;
+  const total = input + output + cacheRead + cacheCreation;
+
+  return (
+    <div className="glass rounded-xl p-4">
+      <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-camp-text-muted">
+        누적 토큰
+      </h3>
+      <div className="mb-3 font-mono text-2xl font-bold tabular-nums text-camp-text">
+        {formatTokens(total)}
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+          <span className="text-camp-text-secondary">Input</span>
+          <span className="font-mono tabular-nums text-camp-text">{formatTokens(input)}</span>
+        </div>
+        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+          <span className="text-camp-text-secondary">Output</span>
+          <span className="font-mono tabular-nums text-camp-text">{formatTokens(output)}</span>
+        </div>
+        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+          <span className="text-camp-text-secondary">Cache Read</span>
+          <span className="font-mono tabular-nums text-camp-text">{formatTokens(cacheRead)}</span>
+        </div>
+        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+          <span className="text-camp-text-secondary">Cache Create</span>
+          <span className="font-mono tabular-nums text-camp-text">{formatTokens(cacheCreation)}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -169,6 +216,9 @@ export default function UserProfile({ user }: UserProfileProps) {
           </div>
         ))}
       </div>
+
+      {/* Token breakdown */}
+      <TotalTokens user={user} />
     </div>
   );
 }

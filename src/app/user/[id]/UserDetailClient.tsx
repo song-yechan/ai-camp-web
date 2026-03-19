@@ -19,6 +19,10 @@ interface UserData {
   commits: number;
   current_streak: number;
   longest_streak: number;
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_read_tokens?: number;
+  cache_creation_tokens?: number;
 }
 
 interface DailyUsage {
