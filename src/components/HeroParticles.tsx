@@ -9,7 +9,7 @@ const PixelBlast = dynamic(
 
 export default function HeroParticles() {
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden motion-reduce:hidden" style={{ minHeight: 300, minWidth: 300 }}>
+    <div className="absolute inset-0 z-0 min-h-[300px] min-w-[300px] overflow-hidden motion-reduce:hidden">
       <PixelBlast
         className="h-full w-full"
         color="#D97706"

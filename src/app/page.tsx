@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center pb-20 md:pb-0">
       {/* Hero -- asymmetric layout */}
-      <section className="relative w-full max-w-5xl px-4 pt-16 pb-12 sm:pt-20 sm:pb-16" style={{ minHeight: 300 }}>
+      <section className="relative min-h-[300px] w-full max-w-5xl px-4 pt-16 pb-12 sm:pt-20 sm:pb-16">
         {/* Background particles */}
         <HeroParticles />
 
