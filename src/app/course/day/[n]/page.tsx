@@ -24,40 +24,49 @@ export default async function DayDetailPage({
   const nextDay = dayNumber < DAYS.length ? dayNumber + 1 : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-12 pb-20 md:pb-12">
       {/* Header */}
       <div className="flex flex-col gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-base font-bold text-black">
+        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-camp-accent text-base font-bold text-black">
           {dayData.day}
         </span>
-        <h1 className="text-2xl font-bold tracking-tight">{dayData.title}</h1>
-        <p className="text-base text-neutral-400">{dayData.description}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-camp-text">
+          {dayData.title}
+        </h1>
+        <p className="text-sm text-camp-text-secondary">
+          {dayData.description}
+        </p>
       </div>
 
-      {/* 실행 방법 */}
+      {/* Instructions */}
       <div className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-neutral-300">실행 방법</h2>
-        <div className="rounded-lg border border-[#2a2a2a] bg-[#111] px-4 py-3 font-mono text-sm text-neutral-300">
-          Claude Code에서{" "}
-          <code className="rounded bg-[#2a2a2a] px-1.5 py-0.5 text-white">
+        <h2 className="text-[10px] font-medium uppercase tracking-[0.15em] text-camp-text-muted">
+          실행 방법
+        </h2>
+        <div className="glass rounded-xl px-4 py-3 text-sm">
+          <span className="text-camp-accent">$</span>{" "}
+          <span className="text-camp-text-secondary">Claude Code에서 </span>
+          <code className="rounded-md bg-white/[0.06] px-1.5 py-0.5 font-mono text-camp-accent">
             /day{dayData.day}
           </code>{" "}
-          입력
+          <span className="text-camp-text-secondary">입력</span>
         </div>
       </div>
 
-      {/* 학습 목표 체크리스트 */}
+      {/* Block checklist */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-neutral-300">학습 목표</h2>
+        <h2 className="text-[10px] font-medium uppercase tracking-[0.15em] text-camp-text-muted">
+          학습 목표
+        </h2>
         <BlockChecklist dayNumber={dayData.day} blocks={dayData.blocks} />
       </div>
 
-      {/* 이전/다음 네비게이션 */}
-      <div className="flex items-center justify-between border-t border-[#2a2a2a] pt-6">
+      {/* Prev/Next navigation */}
+      <div className="flex items-center justify-between border-t border-white/[0.06] pt-6">
         {prevDay ? (
           <Link
             href={`/course/day/${prevDay}`}
-            className="text-sm text-neutral-400 transition-colors hover:text-white"
+            className="cursor-pointer text-sm text-camp-text-secondary transition-colors hover:text-camp-accent"
           >
             &larr; Day {prevDay}
           </Link>
@@ -67,7 +76,7 @@ export default async function DayDetailPage({
         {nextDay ? (
           <Link
             href={`/course/day/${nextDay}`}
-            className="text-sm text-neutral-400 transition-colors hover:text-white"
+            className="cursor-pointer text-sm text-camp-text-secondary transition-colors hover:text-camp-accent"
           >
             Day {nextDay} &rarr;
           </Link>

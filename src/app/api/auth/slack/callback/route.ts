@@ -78,9 +78,18 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Upsert user in Supabase
+  // 기존 사용자 확인
   const supabase = await createServiceSupabase();
 
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("id, role")
+    .eq("slack_id", userInfo.sub)
+    .single();
+
+  const isNewUser = !existingUser;
+
+  // Upsert user in Supabase
   const { data: user, error: dbError } = await supabase
     .from("users")
     .upsert(
@@ -111,6 +120,11 @@ export async function GET(request: NextRequest) {
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
+
+  // 신규 사용자 → 온보딩, 기존 사용자 → 홈
+  if (isNewUser) {
+    return NextResponse.redirect(`${appUrl}/onboarding`);
+  }
 
   return NextResponse.redirect(appUrl);
 }

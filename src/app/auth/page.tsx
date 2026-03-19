@@ -1,22 +1,23 @@
 export default function AuthPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <div className="flex flex-col items-center gap-8 rounded-2xl border border-zinc-800 bg-zinc-900 px-12 py-16">
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="glass flex flex-col items-center gap-8 rounded-2xl px-12 py-16">
         <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-bold text-zinc-50">AB180 AI Camp</h1>
-          <p className="text-sm text-zinc-400">
+          <h1 className="text-xl font-bold text-camp-text">AI Camp</h1>
+          <p className="text-sm text-camp-text-muted">
             Slack 계정으로 로그인하세요
           </p>
         </div>
         <a
           href="/api/auth/slack"
-          className="flex h-12 items-center gap-3 rounded-lg bg-white px-6 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-200"
+          className="flex h-12 cursor-pointer items-center gap-3 rounded-xl bg-camp-accent px-6 text-sm font-semibold text-black transition-colors hover:bg-camp-accent-hover"
         >
           <svg
             width="20"
             height="20"
             viewBox="0 0 54 54"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <g fill="none" fillRule="evenodd">
               <path

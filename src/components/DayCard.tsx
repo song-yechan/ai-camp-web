@@ -19,38 +19,49 @@ export default function DayCard({
 }: DayCardProps) {
   const showProgress =
     totalBlocks !== undefined && completedBlocks !== undefined;
+  const progressPercent =
+    showProgress && totalBlocks > 0
+      ? (completedBlocks / totalBlocks) * 100
+      : 0;
 
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-3 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-5 transition-colors hover:border-neutral-600 hover:bg-[#222]"
+      className="glass glass-hover group relative flex cursor-pointer flex-col gap-3 overflow-hidden rounded-xl p-5 transition-all duration-300"
     >
+      {/* Left accent bar on hover */}
+      <span className="absolute top-0 bottom-0 left-0 w-0.5 bg-transparent transition-colors duration-300 group-hover:bg-camp-accent" />
+
       <div className="flex items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-sm font-bold text-black">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-camp-accent text-sm font-bold text-black">
           {day}
         </span>
-        <h3 className="text-base font-semibold text-white">{title}</h3>
+        <h3 className="text-sm font-semibold text-camp-text">{title}</h3>
       </div>
 
-      <p className="text-sm leading-relaxed text-neutral-400">{description}</p>
+      <p className="text-xs leading-relaxed text-camp-text-secondary">
+        {description}
+      </p>
 
-      {showProgress && (
+      {showProgress ? (
         <div className="mt-auto flex flex-col gap-1.5">
-          <div className="flex justify-between text-xs text-neutral-500">
-            <span>진행률</span>
-            <span>
+          <div className="flex justify-between text-[10px] font-medium uppercase tracking-[0.15em] text-camp-text-secondary">
+            <span>progress</span>
+            <span className="tabular-nums">
               {completedBlocks}/{totalBlocks}
             </span>
           </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-[#2a2a2a]">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
             <div
-              className="h-full rounded-full bg-white transition-all"
-              style={{
-                width: `${totalBlocks > 0 ? (completedBlocks / totalBlocks) * 100 : 0}%`,
-              }}
+              className="h-full rounded-full bg-camp-accent transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
+      ) : (
+        <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-camp-text-secondary">
+          {totalBlocks ?? 0} blocks
+        </span>
       )}
     </Link>
   );

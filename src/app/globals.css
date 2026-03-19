@@ -1,19 +1,218 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-camp-bg: #000000;
+  --color-camp-surface: rgba(255, 255, 255, 0.03);
+  --color-camp-surface-hover: rgba(255, 255, 255, 0.06);
+  --color-camp-border: rgba(255, 255, 255, 0.06);
+  --color-camp-border-hover: rgba(255, 255, 255, 0.1);
+  --color-camp-accent: #F59E0B;
+  --color-camp-accent-hover: #EAB308;
+  --color-camp-accent-dim: #D97706;
+  --color-camp-blue: #3B82F6;
+  --color-camp-violet: #8B5CF6;
+  --color-camp-gold: #F59E0B;
+  --color-camp-silver: #94A3B8;
+  --color-camp-bronze: #CD7F32;
+  --color-camp-text: #FAFAF9;
+  --color-camp-text-secondary: #A8A29E;
+  --color-camp-text-muted: #78716C;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background: var(--color-camp-bg);
+  color: var(--color-camp-text);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Tabular nums ── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Glass utility ── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Background Orbs ── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+  animation: float 20s ease-in-out infinite;
+}
+
+.orb-1 {
+  background: #F59E0B;
+  width: 600px;
+  height: 600px;
+  top: -200px;
+  right: -200px;
+}
+
+.orb-2 {
+  background: #3B82F6;
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  left: -100px;
+  animation-delay: -7s;
+}
+
+.orb-3 {
+  background: #8B5CF6;
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  animation-delay: -14s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* ── Staggered fade-rise ── */
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.5s ease-out both;
+}
+
+/* ── Glow pulse (hero numbers, rank badges) ── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* ── Shimmer border for podium ── */
+@keyframes shimmer-border {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.animate-shimmer-border {
+  animation: shimmer-border 2s ease-in-out infinite;
+}
+
+/* ── Tab underline slide ── */
+.tab-underline {
+  position: relative;
+}
+
+.tab-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-camp-accent);
+  border-radius: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-underline-active::after {
+  transform: scaleX(1);
+}
+
+/* ── 3D Tilt on hover (podium cards) ── */
+.perspective-card {
+  perspective: 800px;
+}
+
+.tilt-card {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover {
+  transform: rotateY(-4deg) rotateX(2deg) translateY(-4px);
+}
+
+/* ── Hero parallax (subtle) ── */
+.parallax-hero {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none !important;
+    opacity: 0.08;
+  }
+
+  .animate-fade-rise,
+  .animate-glow-pulse,
+  .animate-shimmer-border {
+    animation: none !important;
+  }
+
+  .tilt-card:hover {
+    transform: none;
+  }
+
+  .tab-underline::after {
+    transition: none;
+  }
+
+  * {
+    transition-duration: 0ms !important;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(245, 158, 11, 0.3);
+  color: #FAFAF9;
 }

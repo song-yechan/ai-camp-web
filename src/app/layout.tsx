@@ -28,7 +28,7 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-white">
+      <body className="relative min-h-full flex flex-col bg-camp-bg text-camp-text overflow-x-hidden">
         <NavBar />
         <main className="flex flex-1 flex-col">{children}</main>
       </body>

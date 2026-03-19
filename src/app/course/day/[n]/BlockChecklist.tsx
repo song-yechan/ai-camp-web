@@ -29,38 +29,54 @@ export default function BlockChecklist({
         }),
       });
     } catch {
-      // 실패 시 롤백
       setCompleted({ ...completed, [blockId]: !next });
     }
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {blocks.map((block) => (
-        <button
-          key={block.id}
-          type="button"
-          onClick={() => handleToggle(block.id)}
-          className="flex items-center gap-3 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-3 text-left transition-colors hover:border-neutral-600"
-        >
-          <span
-            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs transition-colors ${
-              completed[block.id]
-                ? "border-white bg-white text-black"
-                : "border-neutral-600 text-transparent"
-            }`}
+      {blocks.map((block, index) => {
+        const isDone = completed[block.id];
+        return (
+          <button
+            key={block.id}
+            type="button"
+            onClick={() => handleToggle(block.id)}
+            className="animate-fade-rise glass glass-hover group relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-xl px-4 py-3 text-left transition-all duration-200"
+            style={{ animationDelay: `${index * 40}ms` }}
           >
-            {completed[block.id] ? "\u2713" : ""}
-          </span>
-          <span
-            className={`text-sm ${
-              completed[block.id] ? "text-neutral-500 line-through" : "text-neutral-200"
-            }`}
-          >
-            {block.title}
-          </span>
-        </button>
-      ))}
+            {/* Left accent bar */}
+            <span
+              className={`absolute top-0 bottom-0 left-0 w-0.5 transition-colors duration-300 ${
+                isDone
+                  ? "bg-camp-accent"
+                  : "bg-transparent group-hover:bg-camp-accent/30"
+              }`}
+            />
+
+            {/* Custom checkbox */}
+            <span
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs transition-all duration-200 ${
+                isDone
+                  ? "border-camp-accent bg-camp-accent text-black"
+                  : "border-white/10 text-transparent"
+              }`}
+            >
+              {isDone ? "\u2713" : ""}
+            </span>
+
+            <span
+              className={`text-sm transition-colors ${
+                isDone
+                  ? "text-camp-text-muted line-through"
+                  : "text-camp-text-secondary"
+              }`}
+            >
+              {block.title}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -10,6 +10,7 @@ create table users (
   avatar_url text,
   role text check (role in ('developer', 'non-developer')) default 'non-developer',
   cohort integer default 2,
+  max_streak integer default 0,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -43,10 +44,20 @@ create table progress (
   unique(user_id, day, block)
 );
 
+-- 업적 뱃지
+create table badges (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references users(id) on delete cascade,
+  badge_type text not null,
+  earned_at timestamptz default now(),
+  unique(user_id, badge_type)
+);
+
 -- RLS 활성화
 alter table users enable row level security;
 alter table usage_logs enable row level security;
 alter table progress enable row level security;
+alter table badges enable row level security;
 
 -- 사용자 본인 데이터 읽기
 create policy "Users can read own data" on users
@@ -67,7 +78,15 @@ create policy "Progress readable by all" on progress
 create policy "Progress insert by owner" on progress
   for insert with check (true);
 
+-- 뱃지는 모두 읽기 가능
+create policy "Badges readable by all" on badges
+  for select using (true);
+
+create policy "Badges insert via service" on badges
+  for insert with check (true);
+
 -- 인덱스
 create index idx_usage_logs_date on usage_logs(date);
 create index idx_usage_logs_user_date on usage_logs(user_id, date);
 create index idx_progress_user on progress(user_id);
+create index idx_badges_user on badges(user_id);

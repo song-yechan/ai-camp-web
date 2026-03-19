@@ -1,0 +1,176 @@
+"use client";
+
+import CountUp from "./CountUp";
+
+interface UserProfileProps {
+  user: {
+    user_id: string;
+    name: string;
+    avatar_url: string | null;
+    role: string;
+    cohort?: number | null;
+    total_cost: number;
+    sessions_count: number;
+    commits: number;
+    current_streak: number;
+    longest_streak: number;
+  };
+}
+
+function Avatar({
+  url,
+  name,
+  size = 64,
+}: {
+  url: string | null;
+  name: string;
+  size?: number;
+}) {
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt={name}
+        width={size}
+        height={size}
+        className="rounded-full ring-2 ring-white/10"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
+  return (
+    <span
+      className="flex items-center justify-center rounded-full bg-white/10 text-xl font-semibold text-camp-text-secondary"
+      style={{ width: size, height: size }}
+    >
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
+function CohortBadge({ cohort }: { cohort: number }) {
+  if (cohort === 1) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
+        1기
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-400">
+      2기
+    </span>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const label = role === "developer" ? "개발자" : "비개발자";
+  return (
+    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-camp-text-secondary">
+      {label}
+    </span>
+  );
+}
+
+const STAT_CARDS = [
+  {
+    key: "cost",
+    icon: "\uD83D\uDCB0",
+    label: "총 비용",
+    getValue: (u: UserProfileProps["user"]) => u.total_cost,
+    prefix: "$",
+    decimals: 2,
+  },
+  {
+    key: "sessions",
+    icon: "\uD83D\uDCCA",
+    label: "세션",
+    getValue: (u: UserProfileProps["user"]) => u.sessions_count,
+    prefix: "",
+    decimals: 0,
+  },
+  {
+    key: "commits",
+    icon: "\u2328\uFE0F",
+    label: "커밋",
+    getValue: (u: UserProfileProps["user"]) => u.commits,
+    prefix: "",
+    decimals: 0,
+  },
+  {
+    key: "streak",
+    icon: "\uD83D\uDD25",
+    label: "스트릭",
+    getValue: (u: UserProfileProps["user"]) => u.current_streak,
+    prefix: "",
+    decimals: 0,
+    suffix: "일",
+  },
+] as const;
+
+export default function UserProfile({ user }: UserProfileProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Profile header */}
+      <div className="glass rounded-2xl p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+          <Avatar url={user.avatar_url} name={user.name} size={72} />
+
+          <div className="flex flex-1 flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-camp-text">
+                {user.name}
+              </h1>
+              {user.cohort && <CohortBadge cohort={user.cohort} />}
+              <RoleBadge role={user.role} />
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-camp-text-secondary">
+              <span>
+                <span className="mr-1">{"\uD83D\uDD25"}</span>
+                <span className="font-mono tabular-nums">
+                  {user.current_streak}
+                </span>
+                일 연속
+              </span>
+              <span className="h-3 w-px bg-white/10" aria-hidden="true" />
+              <span>
+                최장{" "}
+                <span className="font-mono tabular-nums">
+                  {user.longest_streak}
+                </span>
+                일
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {STAT_CARDS.map((stat) => (
+          <div
+            key={stat.key}
+            className="glass glass-hover flex flex-col items-center gap-1.5 rounded-xl px-4 py-4 transition-all duration-200"
+          >
+            <span className="text-lg">{stat.icon}</span>
+            <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-camp-text-muted">
+              {stat.label}
+            </span>
+            <span className="font-mono text-lg font-bold tabular-nums text-camp-text">
+              <CountUp
+                end={stat.getValue(user)}
+                prefix={stat.prefix}
+                decimals={stat.decimals}
+                suffix={"suffix" in stat ? stat.suffix : ""}
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export { CohortBadge, RoleBadge, Avatar };
