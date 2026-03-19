@@ -2,94 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServiceSupabase } from "@/lib/supabase/server";
 
-export async function POST(request: NextRequest) {
-  // Authenticate via API token
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return NextResponse.json(
-      { error: "Missing or invalid Authorization header" },
-      { status: 401 }
-    );
-  }
-
-  const apiToken = authHeader.slice(7);
-  const supabase = await createServiceSupabase();
-
-  // Look up user by api_token
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("id")
-    .eq("api_token", apiToken)
-    .single();
-
-  if (userError || !user) {
-    return NextResponse.json(
-      { error: "Invalid API token" },
-      { status: 401 }
-    );
-  }
-
-  // Parse request body
-  const body = await request.json();
-  const {
-    date,
-    input_tokens,
-    output_tokens,
-    cache_creation_tokens,
-    cache_read_tokens,
-    total_cost,
-    sessions_count,
-  } = body;
-
-  if (!date) {
-    return NextResponse.json(
-      { error: "date is required" },
-      { status: 400 }
-    );
-  }
-
-  // Upsert usage_logs with ON CONFLICT accumulation
-  const { error: upsertError } = await supabase.rpc("upsert_usage_log", {
-    p_user_id: user.id,
-    p_date: date,
-    p_input_tokens: input_tokens ?? 0,
-    p_output_tokens: output_tokens ?? 0,
-    p_cache_creation_tokens: cache_creation_tokens ?? 0,
-    p_cache_read_tokens: cache_read_tokens ?? 0,
-    p_total_cost: total_cost ?? 0,
-    p_sessions_count: sessions_count ?? 0,
-  });
-
-  if (upsertError) {
-    // Fallback: try raw upsert with SQL-level accumulation
-    const { error: fallbackError } = await supabase
-      .from("usage_logs")
-      .upsert(
-        {
-          user_id: user.id,
-          date,
-          input_tokens: input_tokens ?? 0,
-          output_tokens: output_tokens ?? 0,
-          cache_creation_tokens: cache_creation_tokens ?? 0,
-          cache_read_tokens: cache_read_tokens ?? 0,
-          total_cost: total_cost ?? 0,
-          sessions_count: sessions_count ?? 0,
-          synced_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,date" }
-      );
-
-    if (fallbackError) {
-      return NextResponse.json(
-        { error: "Failed to save usage data" },
-        { status: 500 }
-      );
-    }
-  }
-
-  return NextResponse.json({ success: true });
-}
-
+// GET: 리더보드 데이터 조회 (공개)
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const period = searchParams.get("period") ?? "all";
@@ -130,7 +43,9 @@ export async function GET(request: NextRequest) {
   // Fetch usage logs
   let logsQuery = supabase
     .from("usage_logs")
-    .select("user_id, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost, sessions_count");
+    .select(
+      "user_id, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost, sessions_count"
+    );
 
   if (dateFilter) {
     logsQuery = logsQuery.gte("date", dateFilter);
