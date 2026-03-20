@@ -3,6 +3,7 @@ import HeroStats from "@/components/HeroStats";
 import HeroTitle from "@/components/HeroTitle";
 import HeroParticles from "@/components/HeroParticles";
 import LiveIndicator from "@/components/LiveIndicator";
+import SetupGuide from "@/components/SetupGuide";
 
 export default function Home() {
   return (
@@ -29,6 +30,11 @@ export default function Home() {
           {/* Right: Live stat counters */}
           <HeroStats />
         </div>
+      </section>
+
+      {/* Setup Guide */}
+      <section className="w-full max-w-5xl px-4 pb-8">
+        <SetupGuide />
       </section>
 
       {/* Leaderboard */}

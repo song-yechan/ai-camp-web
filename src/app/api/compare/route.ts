@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createServiceSupabase();
 
     const [{ data: userA }, { data: userB }] = await Promise.all([
-      supabase.from("users").select("*").eq("user_id", idA).single(),
-      supabase.from("users").select("*").eq("user_id", idB).single(),
+      supabase.from("users").select("*").eq("id", idA).single(),
+      supabase.from("users").select("*").eq("id", idB).single(),
     ]);
 
     if (userA && userB) {
