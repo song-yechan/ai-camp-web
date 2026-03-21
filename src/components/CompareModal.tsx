@@ -163,13 +163,13 @@ export default function CompareModal({ idA, idB, onClose }: CompareModalProps) {
     >
       <div
         ref={contentRef}
-        className="relative mx-4 my-8 w-full max-w-3xl animate-fade-rise rounded-2xl border border-white/[0.06] bg-camp-bg p-6 shadow-2xl sm:my-12"
+        className="relative mx-4 my-8 w-full max-w-3xl animate-fade-rise rounded-2xl border border-camp-border bg-camp-bg p-6 shadow-2xl sm:my-12"
       >
         {/* Close button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-camp-text-secondary transition-colors hover:bg-white/10 hover:text-camp-text"
+          className="absolute top-4 right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-camp-text-secondary transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
           aria-label="닫기"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -289,7 +289,7 @@ export default function CompareModal({ idA, idB, onClose }: CompareModalProps) {
                   return (
                     <div
                       key={badge.type}
-                      className="flex items-center gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] px-4 py-3"
+                      className="flex items-center gap-3 rounded-xl border border-camp-border bg-camp-surface px-4 py-3"
                     >
                       <span className="text-lg">{badge.icon}</span>
                       <span className="flex-1 text-xs font-medium text-camp-text-secondary">
@@ -299,7 +299,7 @@ export default function CompareModal({ idA, idB, onClose }: CompareModalProps) {
                         className={`h-5 w-5 rounded-full text-center text-[10px] font-bold leading-5 ${
                           hasA
                             ? "bg-camp-accent/20 text-camp-accent"
-                            : "bg-white/[0.03] text-camp-text-muted"
+                            : "bg-camp-surface text-camp-text-muted"
                         }`}
                         title={`${userA.name}: ${hasA ? "획득" : "미획득"}`}
                       >
@@ -309,7 +309,7 @@ export default function CompareModal({ idA, idB, onClose }: CompareModalProps) {
                         className={`h-5 w-5 rounded-full text-center text-[10px] font-bold leading-5 ${
                           hasB
                             ? "bg-camp-blue/20 text-camp-blue"
-                            : "bg-white/[0.03] text-camp-text-muted"
+                            : "bg-camp-surface text-camp-text-muted"
                         }`}
                         title={`${userB.name}: ${hasB ? "획득" : "미획득"}`}
                       >

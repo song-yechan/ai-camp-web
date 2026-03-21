@@ -23,7 +23,13 @@ function getLevelInfo(entry: LeaderboardEntry) {
     (entry.cache_creation_tokens ?? 0);
   const xp = calculateXP(totalTokens, entry.role);
   const level = getLevel(xp);
-  return { icon: level.icon, name: level.name };
+  return { icon: level.icon, name: level.name, level: level.level, xp };
+}
+
+function formatXP(xp: number): string {
+  if (xp >= 1_000_000) return `${(xp / 1_000_000).toFixed(1)}M XP`;
+  if (xp >= 1_000) return `${(xp / 1_000).toFixed(1)}K XP`;
+  return `${xp} XP`;
 }
 
 const CATEGORY_TABS: { key: Category; label: string }[] = [
@@ -160,7 +166,7 @@ function Avatar({
         alt={name}
         width={size}
         height={size}
-        className="rounded-full ring-1 ring-white/10"
+        className="rounded-full ring-1 ring-camp-border"
         style={{ width: size, height: size }}
       />
     );
@@ -168,7 +174,7 @@ function Avatar({
 
   return (
     <span
-      className="flex items-center justify-center rounded-full bg-white/10 text-xs font-medium text-camp-text-secondary"
+      className="flex items-center justify-center rounded-full bg-camp-surface-hover text-xs font-medium text-camp-text-secondary"
       style={{ width: size, height: size }}
     >
       {name.charAt(0).toUpperCase()}
@@ -213,7 +219,7 @@ function LeaderboardRow({
           type="checkbox"
           checked={isCompareSelected}
           onChange={() => onToggleCompare(entry.user_id)}
-          className="h-3.5 w-3.5 cursor-pointer appearance-none rounded border border-white/20 bg-white/[0.03] transition-all checked:border-camp-accent checked:bg-camp-accent"
+          className="h-3.5 w-3.5 cursor-pointer appearance-none rounded border border-camp-border bg-camp-surface transition-all checked:border-camp-accent checked:bg-camp-accent"
           style={isCompareSelected ? { backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E\")" } : {}}
         />
       </label>
@@ -228,7 +234,7 @@ function LeaderboardRow({
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
             {entry.department && (
-              <span className="shrink-0 rounded bg-white/5 px-2 py-0.5 text-xs text-zinc-400">
+              <span className="shrink-0 rounded bg-camp-surface px-2 py-0.5 text-xs text-camp-text-secondary">
                 {getCategoryById(entry.department)?.label ?? entry.department}
               </span>
             )}
@@ -276,6 +282,7 @@ export default function Leaderboard() {
   const [animationKey, setAnimationKey] = useState(0);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState(false);
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   // Map category to API-compatible values; camp tab is filtered client-side
   const apiCategory = category === "camp" ? "all" : category;
@@ -358,6 +365,19 @@ export default function Leaderboard() {
     }
   }
 
+  function toggleFlip(userId: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    setFlippedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  }
+
   const compareNames = compareIds.map(
     (id) => data.find((e) => e.user_id === id)?.name ?? id
   );
@@ -401,7 +421,7 @@ export default function Leaderboard() {
             ))}
           </div>
 
-          <div className="flex shrink-0 gap-1 rounded-lg bg-white/[0.03] p-1">
+          <div className="flex shrink-0 gap-1 rounded-lg bg-camp-surface p-1">
             {PERIOD_TABS.map((tab) => (
               <button
                 key={tab.key}
@@ -409,7 +429,7 @@ export default function Leaderboard() {
                 onClick={() => setPeriod(tab.key)}
                 className={`cursor-pointer rounded-md px-3.5 py-1.5 text-xs font-medium transition-all ${
                   period === tab.key
-                    ? "bg-white/10 text-camp-text shadow-sm"
+                    ? "bg-camp-surface-hover text-camp-text shadow-sm"
                     : "text-camp-text-secondary hover:text-camp-text"
                 }`}
               >
@@ -472,103 +492,183 @@ export default function Leaderboard() {
             const rank = index + 1;
             const meta = getRankMeta(rank)!;
             const isSelected = compareIds.includes(entry.user_id);
-            const isDev = entry.role === "developer";
+            const levelInfo = getLevelInfo(entry);
+            const isFlipped = flippedCards.has(entry.user_id);
             return (
               <div
                 key={entry.user_id}
                 className={`animate-fade-rise ${meta.order}`}
-                style={{ animationDelay: `${index * 60}ms` }}
+                style={{
+                  animationDelay: `${index * 60}ms`,
+                  perspective: "1000px",
+                }}
               >
-                <ElectricBorder
-                  color={meta.electricColor}
-                  speed={meta.electricSpeed}
-                  borderRadius={16}
+                <div
+                  style={{
+                    position: "relative",
+                    transition: "transform 0.6s",
+                    transformStyle: "preserve-3d",
+                    transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                  }}
                 >
-                  <SpotlightCard
-                    className={`flex cursor-pointer flex-col items-center gap-4 border ${meta.borderColor} ${meta.glowShadow} transition-all duration-300 ${rank === 1 ? "sm:py-8" : ""} ${isSelected ? "ring-2 ring-camp-accent/40" : ""}`}
-                    spotlightColor={meta.spotlightColor}
+                  {/* Front face */}
+                  <div style={{ backfaceVisibility: "hidden" }}>
+                    <ElectricBorder
+                      color={meta.electricColor}
+                      speed={meta.electricSpeed}
+                      borderRadius={16}
+                    >
+                      <SpotlightCard
+                        className={`relative flex cursor-pointer flex-col items-center gap-4 border ${meta.borderColor} ${meta.glowShadow} transition-all duration-300 ${rank === 1 ? "sm:py-8" : ""} ${isSelected ? "ring-2 ring-camp-accent/40" : ""}`}
+                        spotlightColor={meta.spotlightColor}
+                      >
+                        {/* Flip button */}
+                        <button
+                          type="button"
+                          onClick={(e) => toggleFlip(entry.user_id, e)}
+                          className="absolute right-3 top-3 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-camp-surface text-sm text-camp-text-muted transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
+                          title="카드 뒤집기"
+                        >
+                          ↻
+                        </button>
+
+                        <div
+                          className="flex w-full flex-col items-center gap-4"
+                          onClick={() => handleNavigate(entry.user_id)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleNavigate(entry.user_id);
+                          }}
+                        >
+                          {/* Medal */}
+                          <span className="text-2xl">{meta.medal}</span>
+
+                          {/* Name + Level + Cohort */}
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <img src={levelInfo.icon} alt={levelInfo.name} width={32} height={32} className="size-8" title="레벨" />
+                              <span className="truncate text-2xl font-bold text-camp-text">
+                                {entry.name}
+                              </span>
+                            </div>
+                            <CohortPill cohort={entry.cohort} show={showCohort} />
+                          </div>
+
+                          {/* Streak */}
+                          {entry.current_streak !== undefined && entry.current_streak > 0 && (
+                            <span className="text-xs text-camp-text-muted">
+                              {"\uD83D\uDD25"}{" "}
+                              <span className="font-mono tabular-nums">{entry.current_streak}</span>
+                              일 연속
+                            </span>
+                          )}
+
+                          {/* Stats */}
+                          <div className="flex w-full gap-3">
+                            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-camp-surface px-3 py-2.5">
+                              <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
+                                cost
+                              </span>
+                              <span className="font-mono text-base font-bold tabular-nums text-camp-text">
+                                <CountUp
+                                  end={entry.total_cost}
+                                  prefix="$"
+                                  decimals={2}
+                                />
+                              </span>
+                            </div>
+                            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-camp-surface px-3 py-2.5">
+                              <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
+                                {showDevMetrics ? "commits / PR" : "sessions"}
+                              </span>
+                              <span className="font-mono text-base font-bold tabular-nums text-camp-text">
+                                {showDevMetrics ? (
+                                  <>
+                                    <CountUp end={entry.commits ?? 0} />
+                                    {" / "}
+                                    <CountUp end={entry.pull_requests ?? 0} />
+                                  </>
+                                ) : (
+                                  <CountUp end={entry.sessions_count} />
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Compare checkbox */}
+                        <label
+                          className="flex items-center gap-1.5 text-[10px] text-camp-text-muted"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleCompare(entry.user_id)}
+                            className="h-3 w-3 cursor-pointer appearance-none rounded border border-camp-border bg-camp-surface transition-all checked:border-camp-accent checked:bg-camp-accent"
+                            style={isSelected ? { backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E\")" } : {}}
+                          />
+                          비교
+                        </label>
+                      </SpotlightCard>
+                    </ElectricBorder>
+                  </div>
+
+                  {/* Back face */}
+                  <div
+                    style={{
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
                   >
-                    <div
-                      className="flex w-full flex-col items-center gap-4"
-                      onClick={() => handleNavigate(entry.user_id)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleNavigate(entry.user_id);
-                      }}
+                    <ElectricBorder
+                      color={meta.electricColor}
+                      speed={meta.electricSpeed}
+                      borderRadius={16}
                     >
-                      {/* Medal */}
-                      <span className="text-2xl">{meta.medal}</span>
+                      <SpotlightCard
+                        className={`relative flex h-full cursor-default flex-col items-center justify-center gap-3 border ${meta.borderColor} ${meta.glowShadow} ${rank === 1 ? "sm:py-8" : ""}`}
+                        spotlightColor={meta.spotlightColor}
+                      >
+                        {/* Flip back button */}
+                        <button
+                          type="button"
+                          onClick={(e) => toggleFlip(entry.user_id, e)}
+                          className="absolute right-3 top-3 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-camp-surface text-sm text-camp-text-muted transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
+                          title="카드 뒤집기"
+                        >
+                          ↻
+                        </button>
 
-                      {/* Name + Level + Cohort */}
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-center gap-1.5">
-                          <img src={getLevelInfo(entry).icon} alt={getLevelInfo(entry).name} width={32} height={32} className="size-8" title="레벨" />
-                          <span className="truncate text-2xl font-bold text-camp-text">
-                            {entry.name}
-                          </span>
-                        </div>
-                        <CohortPill cohort={entry.cohort} show={showCohort} />
-                      </div>
+                        {/* Large Pokemon icon */}
+                        <img
+                          src={levelInfo.icon}
+                          alt={levelInfo.name}
+                          width={120}
+                          height={120}
+                          style={{ imageRendering: "pixelated" }}
+                          className="size-[120px]"
+                        />
 
-                      {/* Streak */}
-                      {entry.current_streak !== undefined && entry.current_streak > 0 && (
-                        <span className="text-xs text-camp-text-muted">
-                          {"\uD83D\uDD25"}{" "}
-                          <span className="font-mono tabular-nums">{entry.current_streak}</span>
-                          일 연속
+                        {/* Level name */}
+                        <span className="text-lg font-bold text-camp-text">
+                          Lv.{levelInfo.level} {levelInfo.name}
                         </span>
-                      )}
 
-                      {/* Stats */}
-                      <div className="flex w-full gap-3">
-                        <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-white/[0.03] px-3 py-2.5">
-                          <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
-                            cost
-                          </span>
-                          <span className="font-mono text-base font-bold tabular-nums text-camp-text">
-                            <CountUp
-                              end={entry.total_cost}
-                              prefix="$"
-                              decimals={2}
-                            />
-                          </span>
-                        </div>
-                        <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-white/[0.03] px-3 py-2.5">
-                          <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
-                            {showDevMetrics ? "commits / PR" : "sessions"}
-                          </span>
-                          <span className="font-mono text-base font-bold tabular-nums text-camp-text">
-                            {showDevMetrics ? (
-                              <>
-                                <CountUp end={entry.commits ?? 0} />
-                                {" / "}
-                                <CountUp end={entry.pull_requests ?? 0} />
-                              </>
-                            ) : (
-                              <CountUp end={entry.sessions_count} />
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Compare checkbox */}
-                    <label
-                      className="flex items-center gap-1.5 text-[10px] text-camp-text-muted"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleToggleCompare(entry.user_id)}
-                        className="h-3 w-3 cursor-pointer appearance-none rounded border border-white/20 bg-white/[0.03] transition-all checked:border-camp-accent checked:bg-camp-accent"
-                        style={isSelected ? { backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E\")" } : {}}
-                      />
-                      비교
-                    </label>
-                  </SpotlightCard>
-                </ElectricBorder>
+                        {/* XP */}
+                        <span className="font-mono text-sm tabular-nums text-camp-text-secondary">
+                          {formatXP(levelInfo.xp)}
+                        </span>
+                      </SpotlightCard>
+                    </ElectricBorder>
+                  </div>
+                </div>
               </div>
             );
           })}

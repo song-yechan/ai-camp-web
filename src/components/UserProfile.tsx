@@ -38,7 +38,7 @@ function Avatar({
         alt={name}
         width={size}
         height={size}
-        className="rounded-full ring-2 ring-white/10"
+        className="rounded-full ring-2 ring-camp-border"
         style={{ width: size, height: size }}
       />
     );
@@ -46,7 +46,7 @@ function Avatar({
 
   return (
     <span
-      className="flex items-center justify-center rounded-full bg-white/10 text-xl font-semibold text-camp-text-secondary"
+      className="flex items-center justify-center rounded-full bg-camp-surface-hover text-xl font-semibold text-camp-text-secondary"
       style={{ width: size, height: size }}
     >
       {name.charAt(0).toUpperCase()}
@@ -72,7 +72,7 @@ function CohortBadge({ cohort }: { cohort: number }) {
 function RoleBadge({ role }: { role: string }) {
   const label = role === "developer" ? "개발자" : "비개발자";
   return (
-    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-camp-text-secondary">
+    <span className="inline-flex items-center rounded-full border border-camp-border bg-camp-surface px-2 py-0.5 text-xs font-medium text-camp-text-secondary">
       {label}
     </span>
   );
@@ -100,19 +100,19 @@ function TotalTokens({ user }: { user: UserProfileProps["user"] }) {
         {formatTokens(total)}
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+        <div className="flex justify-between rounded-lg bg-camp-surface px-3 py-2">
           <span className="text-camp-text-secondary">Input</span>
           <span className="font-mono tabular-nums text-camp-text">{formatTokens(input)}</span>
         </div>
-        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+        <div className="flex justify-between rounded-lg bg-camp-surface px-3 py-2">
           <span className="text-camp-text-secondary">Output</span>
           <span className="font-mono tabular-nums text-camp-text">{formatTokens(output)}</span>
         </div>
-        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+        <div className="flex justify-between rounded-lg bg-camp-surface px-3 py-2">
           <span className="text-camp-text-secondary">Cache Read</span>
           <span className="font-mono tabular-nums text-camp-text">{formatTokens(cacheRead)}</span>
         </div>
-        <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+        <div className="flex justify-between rounded-lg bg-camp-surface px-3 py-2">
           <span className="text-camp-text-secondary">Cache Create</span>
           <span className="font-mono tabular-nums text-camp-text">{formatTokens(cacheCreation)}</span>
         </div>
@@ -147,7 +147,7 @@ function LevelCard({ user }: { user: UserProfileProps["user"] }) {
             </span>
           </div>
           {/* Progress bar */}
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-camp-surface-hover">
             <div
               className="h-full rounded-full bg-camp-accent transition-all duration-700 ease-out"
               style={{ width: `${Math.round(level.progress * 100)}%` }}
@@ -227,7 +227,7 @@ export default function UserProfile({ user }: UserProfileProps) {
                 </span>
                 일 연속
               </span>
-              <span className="h-3 w-px bg-white/10" aria-hidden="true" />
+              <span className="h-3 w-px bg-camp-border" aria-hidden="true" />
               <span>
                 최장{" "}
                 <span className="font-mono tabular-nums">
