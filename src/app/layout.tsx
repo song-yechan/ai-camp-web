@@ -28,7 +28,15 @@ export default function RootLayout({
     <html
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("ai-camp-theme");if(t==="light")document.documentElement.classList.add("light")}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="relative min-h-full flex flex-col bg-camp-bg text-camp-text overflow-x-hidden">
         <NavBar />
         <main className="flex flex-1 flex-col">{children}</main>

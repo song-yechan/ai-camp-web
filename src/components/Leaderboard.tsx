@@ -235,14 +235,13 @@ function LeaderboardRow({
             <img src={getLevelInfo(entry).icon} alt={getLevelInfo(entry).name} width={20} height={20} className="size-5 shrink-0" title="레벨" />
             <span className="truncate text-sm font-semibold text-camp-text">{entry.name}</span>
             <CohortPill cohort={entry.cohort} show={showCohort} />
+            {entry.current_streak !== undefined && entry.current_streak > 0 && (
+              <span className="shrink-0 text-[10px] text-camp-text-muted">
+                {"\uD83D\uDD25"}{" "}
+                <span className="font-mono tabular-nums">{entry.current_streak}</span>일
+              </span>
+            )}
           </div>
-          {entry.current_streak !== undefined && entry.current_streak > 0 && (
-            <span className="text-[10px] text-camp-text-muted">
-              {"\uD83D\uDD25"}{" "}
-              <span className="font-mono tabular-nums">{entry.current_streak}</span>
-              일
-            </span>
-          )}
         </div>
       </div>
 

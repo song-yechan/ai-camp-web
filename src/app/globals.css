@@ -32,17 +32,29 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Light mode overrides ── */
+html.light {
+  --color-camp-bg: #F5F5F4;
+  --color-camp-surface: rgba(0, 0, 0, 0.03);
+  --color-camp-surface-hover: rgba(0, 0, 0, 0.06);
+  --color-camp-border: rgba(0, 0, 0, 0.08);
+  --color-camp-border-hover: rgba(0, 0, 0, 0.12);
+  --color-camp-text: #1C1917;
+  --color-camp-text-secondary: #57534E;
+  --color-camp-text-muted: #A8A29E;
+}
+
 /* ── Glass utility ── */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-camp-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-camp-border);
 }
 
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--color-camp-surface-hover);
+  border-color: var(--color-camp-border-hover);
 }
 
 /* ── Background Orbs ── */
@@ -54,6 +66,10 @@ body {
   pointer-events: none;
   z-index: 0;
   animation: float 20s ease-in-out infinite;
+}
+
+html.light .orb {
+  opacity: 0.08;
 }
 
 .orb-1 {
@@ -203,16 +219,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-camp-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--color-camp-border-hover);
 }
 
 /* ── Selection ── */
 ::selection {
   background: rgba(245, 158, 11, 0.3);
-  color: #FAFAF9;
+  color: var(--color-camp-text);
 }

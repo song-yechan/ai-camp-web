@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "리더보드" },
@@ -19,7 +20,7 @@ export default function NavBar() {
   return (
     <>
       {/* Desktop nav */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-black/60 backdrop-blur-xl max-md:hidden">
+      <nav className="sticky top-0 z-50 border-b border-camp-border bg-camp-bg/60 backdrop-blur-xl max-md:hidden">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Link
@@ -28,7 +29,7 @@ export default function NavBar() {
             >
               AI Camp
             </Link>
-            <span className="h-3.5 w-px bg-white/10" aria-hidden="true" />
+            <span className="h-3.5 w-px bg-camp-border-hover" aria-hidden="true" />
             <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-camp-text-secondary">
               ab180
             </span>
@@ -52,9 +53,10 @@ export default function NavBar() {
                 )}
               </Link>
             ))}
+            <ThemeToggle />
             <Link
               href="/auth"
-              className="ml-3 cursor-pointer rounded-lg bg-camp-accent px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-camp-accent-hover"
+              className="ml-2 cursor-pointer rounded-lg bg-camp-accent px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-camp-accent-hover"
             >
               로그인
             </Link>
@@ -63,7 +65,7 @@ export default function NavBar() {
       </nav>
 
       {/* Mobile bottom tab bar */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-white/[0.06] bg-black/80 backdrop-blur-xl md:hidden">
+      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-camp-border bg-camp-bg/80 backdrop-blur-xl md:hidden">
         <div className="flex h-14 items-center justify-around px-2">
           {NAV_LINKS.map((link) => (
             <Link
