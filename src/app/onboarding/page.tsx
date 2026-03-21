@@ -7,6 +7,7 @@ import {
   getCategoriesByGroup,
   type JobCategoryId,
 } from "@/lib/job-categories";
+import SetupGuide from "@/components/SetupGuide";
 
 const DEV_CATEGORIES = getCategoriesByGroup("developer");
 const NON_DEV_CATEGORIES = getCategoriesByGroup("non-developer");
@@ -15,6 +16,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<JobCategoryId | null>(null);
+  const [completed, setCompleted] = useState(false);
 
   async function handleSubmit() {
     if (!selected) return;
@@ -27,11 +29,38 @@ export default function OnboardingPage() {
       });
 
       if (res.ok) {
-        router.push("/");
+        setCompleted(true);
       }
     } finally {
       setLoading(false);
     }
+  }
+
+  if (completed) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-8">
+        <div className="flex w-full max-w-2xl flex-col items-center gap-8">
+          <h1 className="text-2xl font-bold text-camp-text">
+            설정을 완료하세요
+          </h1>
+          <p className="text-center text-sm text-camp-text-secondary">
+            아래 명령어를 터미널에 붙여넣기하면 사용량 추적이 시작됩니다.
+          </p>
+
+          <div className="w-full">
+            <SetupGuide />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="w-full max-w-xs cursor-pointer rounded-xl bg-camp-accent px-6 py-3 text-sm font-semibold text-black transition-all hover:bg-camp-accent-hover"
+          >
+            리더보드로 이동
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -9,8 +9,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 인증 불필요: auth 페이지, cron API
-  if (pathname === "/auth" || pathname.startsWith("/api/auth") || pathname.startsWith("/api/cron")) {
+  // 인증 불필요: auth, setup/hook (터미널에서 호출), usage submit/onboard (Hook에서 호출)
+  if (
+    pathname === "/auth" ||
+    pathname.startsWith("/api/auth") ||
+    pathname === "/api/setup" ||
+    pathname === "/api/hook-script" ||
+    pathname === "/api/usage/submit" ||
+    pathname === "/api/usage/onboard"
+  ) {
     return NextResponse.next();
   }
 

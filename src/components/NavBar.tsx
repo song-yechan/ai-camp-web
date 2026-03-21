@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SetupTooltip from "./SetupTooltip";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
@@ -53,6 +54,7 @@ export default function NavBar() {
                 )}
               </Link>
             ))}
+            <SetupTooltip />
             <ThemeToggle />
             <Link
               href="/auth"
