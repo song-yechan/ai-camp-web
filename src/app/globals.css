@@ -32,59 +32,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Light mode overrides ── */
-html.light {
-  --color-camp-bg: #FAFAF9;
-  --color-camp-surface: rgba(255, 255, 255, 0.80);
-  --color-camp-surface-hover: rgba(255, 255, 255, 0.92);
-  --color-camp-border: rgba(0, 0, 0, 0.12);
-  --color-camp-border-hover: rgba(0, 0, 0, 0.18);
-  --color-camp-accent: #D97706;
-  --color-camp-accent-hover: #B45309;
-  --color-camp-accent-dim: #92400E;
-  --color-camp-text: #1C1917;
-  --color-camp-text-secondary: #44403C;
-  --color-camp-text-muted: #78716C;
-  --color-camp-silver: #64748B;
-  color-scheme: light;
-}
-
-html.light .glass {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(0, 0, 0, 0.12);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-}
-
-html.light .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.18);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-
-html.light ::selection {
-  background: rgba(217, 119, 6, 0.25);
-  color: #1C1917;
-}
-
-html.light ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-}
-
-html.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-html.light .cohort-pill-amber {
-  color: #b45309;
-  border-color: rgba(245, 158, 11, 0.25);
-  background: rgba(245, 158, 11, 0.12);
-}
-
-html.light .cohort-pill-blue {
-  color: #1d4ed8;
-  border-color: rgba(59, 130, 246, 0.25);
-  background: rgba(59, 130, 246, 0.12);
-}
 
 /* ── Glass utility ── */
 .glass {
@@ -110,9 +57,6 @@ html.light .cohort-pill-blue {
   animation: float 20s ease-in-out infinite;
 }
 
-html.light .orb {
-  opacity: 0.08;
-}
 
 .orb-1 {
   background: #F59E0B;

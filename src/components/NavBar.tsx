@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SetupTooltip from "./SetupTooltip";
-import ThemeToggle from "./ThemeToggle";
+
 
 const NAV_LINKS = [
   { href: "/", label: "리더보드" },
@@ -55,7 +55,7 @@ export default function NavBar() {
               </Link>
             ))}
             <SetupTooltip />
-            <ThemeToggle />
+
             <Link
               href="/auth"
               className="ml-2 cursor-pointer rounded-lg bg-camp-accent px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-camp-accent-hover"
