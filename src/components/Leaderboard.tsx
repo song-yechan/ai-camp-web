@@ -15,14 +15,15 @@ import { calculateXP, getLevel } from "@/lib/level-system";
 type Category = "all" | "camp" | "non-dev" | "dev";
 type Period = "today" | "week" | "all";
 
-function getLevelIcon(entry: LeaderboardEntry): string {
+function getLevelInfo(entry: LeaderboardEntry) {
   const totalTokens =
     (entry.input_tokens ?? 0) +
     (entry.output_tokens ?? 0) +
     (entry.cache_read_tokens ?? 0) +
     (entry.cache_creation_tokens ?? 0);
   const xp = calculateXP(totalTokens, entry.role);
-  return getLevel(xp).icon;
+  const level = getLevel(xp);
+  return { icon: level.icon, name: level.name };
 }
 
 const CATEGORY_TABS: { key: Category; label: string }[] = [
@@ -231,7 +232,7 @@ function LeaderboardRow({
                 {getCategoryById(entry.department)?.label ?? entry.department}
               </span>
             )}
-            <span className="shrink-0 text-sm" title="레벨">{getLevelIcon(entry)}</span>
+            <img src={getLevelInfo(entry).icon} alt={getLevelInfo(entry).name} width={20} height={20} className="size-5 shrink-0" title="레벨" />
             <span className="truncate text-sm font-semibold text-camp-text">{entry.name}</span>
             <CohortPill cohort={entry.cohort} show={showCohort} />
           </div>
@@ -503,7 +504,7 @@ export default function Leaderboard() {
                       {/* Name + Level + Cohort */}
                       <div className="flex flex-col items-center gap-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-lg" title="레벨">{getLevelIcon(entry)}</span>
+                          <img src={getLevelInfo(entry).icon} alt={getLevelInfo(entry).name} width={32} height={32} className="size-8" title="레벨" />
                           <span className="truncate text-2xl font-bold text-camp-text">
                             {entry.name}
                           </span>

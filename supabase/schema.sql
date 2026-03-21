@@ -16,7 +16,7 @@ create table users (
   updated_at timestamptz default now()
 );
 
--- 일별 사용량 (Claude Code Analytics API에서 자동 수집)
+-- 일별 사용량 (Stop Hook으로 실시간 수집)
 create table usage_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references users(id) on delete cascade,
