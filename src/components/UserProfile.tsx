@@ -208,8 +208,6 @@ export default function UserProfile({ user }: UserProfileProps) {
       {/* Profile header */}
       <div className="glass rounded-2xl p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-          <Avatar url={user.avatar_url} name={user.name} size={72} />
-
           <div className="flex flex-1 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-bold tracking-tight text-camp-text">
