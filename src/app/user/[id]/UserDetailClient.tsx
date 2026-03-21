@@ -42,12 +42,17 @@ export default function UserDetailClient({ userId }: { userId: string }) {
   const [allBadges, setAllBadges] = useState<Badge[]>([...BADGE_TYPES]);
   const [earnedBadges, setEarnedBadges] = useState<FallbackEarnedBadge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [needsLogin, setNeedsLogin] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
         const res = await fetch(`/api/user/${userId}`);
+        if (res.status === 401) {
+          setNeedsLogin(true);
+          return;
+        }
         if (res.ok) {
           const json = await res.json();
           setUser(json.user);
@@ -87,6 +92,22 @@ export default function UserDetailClient({ userId }: { userId: string }) {
           <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-camp-accent" />
           <span className="text-sm text-camp-text-secondary">불러오는 중...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (needsLogin) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 py-24">
+        <span className="text-4xl">🔒</span>
+        <span className="text-lg font-semibold text-camp-text">로그인이 필요합니다</span>
+        <span className="text-sm text-camp-text-secondary">프로필을 보려면 먼저 로그인해주세요.</span>
+        <Link
+          href="/auth"
+          className="rounded-lg bg-camp-accent px-6 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-camp-accent-hover"
+        >
+          로그인
+        </Link>
       </div>
     );
   }

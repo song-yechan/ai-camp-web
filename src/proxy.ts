@@ -9,19 +9,18 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 인증 불필요: auth, setup/hook (터미널에서 호출), usage submit/onboard (Hook에서 호출)
-  if (
-    pathname === "/auth" ||
-    pathname.startsWith("/api/auth") ||
-    pathname === "/api/setup" ||
-    pathname === "/api/hook-script" ||
-    pathname === "/api/usage/submit" ||
-    pathname === "/api/usage/onboard"
-  ) {
+  // 인증 필요: 온보딩, 관리자 API, 내 정보 API만
+  const authRequired =
+    pathname === "/onboarding" ||
+    pathname.startsWith("/api/admin") ||
+    pathname === "/api/me" ||
+    pathname === "/api/onboarding" ||
+    pathname === "/api/progress";
+
+  if (!authRequired) {
     return NextResponse.next();
   }
 
-  // 나머지 모든 페이지/API는 인증 필요
   const session = request.cookies.get("ai-camp-session");
 
   if (!session?.value) {
