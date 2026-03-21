@@ -19,7 +19,7 @@ export default function Home() {
 
             <HeroTitle />
 
-            <p className="max-w-md text-base leading-relaxed text-zinc-100">
+            <p className="max-w-md text-base leading-relaxed text-camp-text-secondary">
               AB180 구성원들의 Claude Code 사용량을 실시간으로 확인하세요.
               <br className="hidden sm:block" />
               더 많이 쓸수록, 더 빠르게 성장합니다.

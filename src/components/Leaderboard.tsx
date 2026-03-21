@@ -138,13 +138,13 @@ function CohortPill({ cohort, show }: { cohort: number | null | undefined; show:
   if (!show || !cohort) return null;
   if (cohort === 1) {
     return (
-      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 py-px text-[10px] font-medium text-amber-400">
+      <span className="cohort-pill-amber inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 py-px text-[10px] font-medium text-amber-400">
         1기
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-1.5 py-px text-[10px] font-medium text-blue-400">
+    <span className="cohort-pill-blue inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-1.5 py-px text-[10px] font-medium text-blue-400">
       2기
     </span>
   );

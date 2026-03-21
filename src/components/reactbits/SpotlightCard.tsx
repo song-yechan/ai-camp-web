@@ -50,7 +50,7 @@ export default function SpotlightCard({
       onBlur={handleBlur}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-camp-border bg-camp-surface p-6 ${className}`}
     >
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"

@@ -4,10 +4,10 @@ import SplitText from "@/components/reactbits/SplitText";
 
 export default function HeroTitle() {
   return (
-    <h1 className="text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl">
+    <h1 className="text-3xl font-bold leading-[1.15] tracking-tight text-camp-text sm:text-4xl lg:text-5xl">
       <SplitText
         text="더 많이 쓰는 사람이"
-        className="text-white"
+        className="text-camp-text"
         delay={40}
         duration={0.5}
         splitType="chars"
