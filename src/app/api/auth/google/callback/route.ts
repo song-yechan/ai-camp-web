@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
   if (!isNewUser && existingUser?.api_token == null) {
     await supabase
       .from("users")
-      .update({ api_token: generateApiToken() })
+      .update({ api_token: generateApiToken(), setup_completed: false })
       .eq("id", user.id);
   }
 

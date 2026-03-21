@@ -12,6 +12,7 @@ create table users (
   cohort integer default 2,
   max_streak integer default 0,
   api_token text unique, -- Stop Hook 인증용 토큰 (aicamp_ + 64-char hex)
+  setup_completed boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

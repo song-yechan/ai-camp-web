@@ -9,6 +9,7 @@ interface MeUser {
   id: string;
   name: string;
   avatar_url: string | null;
+  setup_completed: boolean;
 }
 
 const NAV_LINKS = [
@@ -22,13 +23,19 @@ export default function NavBar() {
   const [user, setUser] = useState<MeUser | null>(null);
   const [checked, setChecked] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [setupTooltipOpen, setSetupTooltipOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/me")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.id) {
-          setUser({ id: data.id, name: data.name, avatar_url: data.avatar_url });
+          setUser({
+            id: data.id,
+            name: data.name,
+            avatar_url: data.avatar_url,
+            setup_completed: data.setup_completed,
+          });
         }
       })
       .catch(() => setUser(null))
@@ -51,6 +58,8 @@ export default function NavBar() {
       setLoggingOut(false);
     }
   }
+
+  const needsSetup = checked && user != null && user.setup_completed === false;
 
   return (
     <>
@@ -88,7 +97,11 @@ export default function NavBar() {
                 )}
               </Link>
             ))}
-            <SetupTooltip />
+            <SetupTooltip
+              needsSetup={needsSetup}
+              forceOpen={setupTooltipOpen}
+              onOpenChange={setSetupTooltipOpen}
+            />
 
             {checked && user ? (
               <div className="ml-2 flex items-center gap-2">
@@ -132,6 +145,24 @@ export default function NavBar() {
           </div>
         </div>
       </nav>
+
+      {/* Setup required banner */}
+      {needsSetup && (
+        <div className="border-b border-amber-500/20 bg-amber-500/10 max-md:hidden">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
+            <p className="text-xs text-amber-200">
+              CLI 설정이 필요합니다. 터미널에서 setup 명령어를 실행해주세요.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSetupTooltipOpen(true)}
+              className="cursor-pointer rounded-md bg-amber-500/20 px-3 py-1 text-xs font-medium text-amber-200 transition-colors hover:bg-amber-500/30"
+            >
+              설정 방법 보기
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile bottom tab bar */}
       <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-camp-border bg-camp-bg/80 backdrop-blur-xl md:hidden">

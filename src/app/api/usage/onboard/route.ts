@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (fetchError) {
       return NextResponse.json(
-        { error: "Database error", details: fetchError.message },
+        { error: "Database error" },
         { status: 500 }
       );
     }
@@ -65,16 +65,22 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         return NextResponse.json(
-          { error: "Failed to insert usage log", details: insertError.message },
+          { error: "Failed to insert usage log" },
           { status: 500 }
         );
       }
     }
 
+    // 5. Mark setup as completed
+    await supabase
+      .from("users")
+      .update({ setup_completed: true })
+      .eq("id", userId);
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json(
-      { error: "Internal server error", details: err instanceof Error ? err.message : String(err) },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

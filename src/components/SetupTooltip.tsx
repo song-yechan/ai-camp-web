@@ -2,15 +2,39 @@
 
 import { useEffect, useRef, useState } from "react";
 
+interface SetupTooltipProps {
+  needsSetup?: boolean;
+  forceOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
 interface UserMe {
   api_token: string | null;
 }
 
-export default function SetupTooltip() {
+export default function SetupTooltip({
+  needsSetup = false,
+  forceOpen,
+  onOpenChange,
+}: SetupTooltipProps) {
   const [user, setUser] = useState<UserMe | null>(null);
-  const [open, setOpen] = useState(false);
+  const [open, setOpenInternal] = useState(false);
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const setOpen = (value: boolean | ((prev: boolean) => boolean)) => {
+    setOpenInternal((prev) => {
+      const next = typeof value === "function" ? value(prev) : value;
+      onOpenChange?.(next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (forceOpen !== undefined) {
+      setOpenInternal(forceOpen);
+    }
+  }, [forceOpen]);
 
   useEffect(() => {
     fetch("/api/me")
@@ -45,7 +69,7 @@ export default function SetupTooltip() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-camp-text-secondary transition-colors hover:text-camp-text"
+        className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-camp-text-secondary transition-colors hover:text-camp-text"
         aria-label="CLI 설정"
       >
         <svg
@@ -62,6 +86,9 @@ export default function SetupTooltip() {
           <polyline points="4 17 10 11 4 5" />
           <line x1="12" y1="19" x2="20" y2="19" />
         </svg>
+        {needsSetup && (
+          <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-red-500" />
+        )}
       </button>
 
       {open && (

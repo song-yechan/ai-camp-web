@@ -78,6 +78,7 @@ describe("POST /api/usage/onboard", () => {
 
   it("creates new usage_logs row when none exists for today", async () => {
     const insertMock = vi.fn().mockResolvedValue({ error: null });
+    const updateMock = vi.fn().mockReturnValue({ eq: () => Promise.resolve({ error: null }) });
 
     mockFrom.mockImplementation((table: string) => {
       if (table === "users") {
@@ -88,6 +89,7 @@ describe("POST /api/usage/onboard", () => {
                 Promise.resolve({ data: { id: "user-1" }, error: null }),
             }),
           }),
+          update: updateMock,
         };
       }
       if (table === "usage_logs") {
@@ -125,6 +127,7 @@ describe("POST /api/usage/onboard", () => {
 
   it("skips insert when usage_logs row already exists for today", async () => {
     const insertMock = vi.fn();
+    const updateMock = vi.fn().mockReturnValue({ eq: () => Promise.resolve({ error: null }) });
 
     mockFrom.mockImplementation((table: string) => {
       if (table === "users") {
@@ -135,6 +138,7 @@ describe("POST /api/usage/onboard", () => {
                 Promise.resolve({ data: { id: "user-1" }, error: null }),
             }),
           }),
+          update: updateMock,
         };
       }
       if (table === "usage_logs") {
