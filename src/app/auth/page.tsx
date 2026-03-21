@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -17,11 +18,25 @@ const ERROR_MESSAGES: Record<string, string> = {
     "로그인이 취소되었습니다.",
 };
 
-export default function AuthPage() {
+function AuthContent() {
   const searchParams = useSearchParams();
   const errorCode = searchParams.get("error");
-  const errorMessage = errorCode ? ERROR_MESSAGES[errorCode] ?? "로그인 중 문제가 발생했습니다. 다시 시도해주세요." : null;
+  const errorMessage = errorCode
+    ? ERROR_MESSAGES[errorCode] ?? "로그인 중 문제가 발생했습니다. 다시 시도해주세요."
+    : null;
 
+  return (
+    <>
+      {errorMessage && (
+        <div className="w-full rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
+          <p className="text-center text-sm text-red-400">{errorMessage}</p>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="glass flex flex-col items-center gap-8 rounded-2xl px-12 py-16">
@@ -32,13 +47,9 @@ export default function AuthPage() {
           </p>
         </div>
 
-        {errorMessage && (
-          <div className="w-full rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
-            <p className="text-center text-sm text-red-400">
-              {errorMessage}
-            </p>
-          </div>
-        )}
+        <Suspense fallback={null}>
+          <AuthContent />
+        </Suspense>
 
         <a
           href="/api/auth/google"
