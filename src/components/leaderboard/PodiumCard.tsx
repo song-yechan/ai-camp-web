@@ -116,14 +116,14 @@ export default function PodiumCard({
             borderRadius={16}
           >
             <SpotlightCard
-              className={`relative flex cursor-pointer flex-col items-center gap-4 border ${meta.borderColor} ${meta.glowShadow} transition-all duration-300 ${rank === 1 ? "sm:py-8" : ""} ${isCompareSelected ? "ring-2 ring-camp-accent/40" : ""}`}
+              className={`relative flex cursor-pointer flex-col items-center gap-3 border sm:gap-4 ${meta.borderColor} ${meta.glowShadow} transition-all duration-300 ${rank === 1 ? "sm:py-8" : ""} ${isCompareSelected ? "ring-2 ring-camp-accent/40" : ""}`}
               spotlightColor={meta.spotlightColor}
             >
               {/* Flip button */}
               <button
                 type="button"
                 onClick={(e) => onToggleFlip(entry.user_id, e)}
-                className="absolute right-3 top-3 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-camp-surface text-sm text-camp-text-muted transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
+                className="absolute right-2 top-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-camp-surface text-sm text-camp-text-muted transition-colors hover:bg-camp-surface-hover hover:text-camp-text sm:right-3 sm:top-3 sm:h-7 sm:w-7"
                 title="카드 뒤집기"
               >
                 ↻
@@ -145,7 +145,7 @@ export default function PodiumCard({
                 <div className="flex flex-col items-center gap-1">
                   <div className="flex items-center gap-1.5">
                     <img src={levelInfo.icon} alt={levelInfo.name} width={32} height={32} className="size-8" title="레벨" />
-                    <span className="truncate text-2xl font-bold text-camp-text">
+                    <span className="max-w-[140px] truncate text-lg font-bold text-camp-text sm:max-w-[180px] sm:text-2xl">
                       {entry.name}
                     </span>
                   </div>
@@ -162,20 +162,20 @@ export default function PodiumCard({
                 )}
 
                 {/* Stats */}
-                <div className="flex w-full gap-3">
-                  <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-camp-surface px-3 py-2.5">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
+                <div className="flex w-full gap-2 sm:gap-3">
+                  <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-camp-surface px-2 py-2 sm:px-3 sm:py-2.5">
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-camp-text-secondary sm:text-[10px]">
                       tokens
                     </span>
-                    <span className="font-mono text-base font-bold tabular-nums text-camp-text">
+                    <span className="font-mono text-sm font-bold tabular-nums text-camp-text sm:text-base">
                       {formatNumber(calculateTotalTokens(entry))}
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-camp-surface px-3 py-2.5">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-camp-text-secondary">
+                  <div className="flex flex-1 flex-col items-center gap-0.5 rounded-lg bg-camp-surface px-2 py-2 sm:px-3 sm:py-2.5">
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-camp-text-secondary sm:text-[10px]">
                       {showDevMetrics ? "commits / PR" : "sessions"}
                     </span>
-                    <span className="font-mono text-base font-bold tabular-nums text-camp-text">
+                    <span className="font-mono text-sm font-bold tabular-nums text-camp-text sm:text-base">
                       {showDevMetrics ? (
                         <>
                           <CountUp end={entry.commits ?? 0} />
@@ -233,7 +233,7 @@ export default function PodiumCard({
               <button
                 type="button"
                 onClick={(e) => onToggleFlip(entry.user_id, e)}
-                className="absolute right-3 top-3 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-camp-surface text-sm text-camp-text-muted transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
+                className="absolute right-2 top-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-camp-surface text-sm text-camp-text-muted transition-colors hover:bg-camp-surface-hover hover:text-camp-text sm:right-3 sm:top-3 sm:h-7 sm:w-7"
                 title="카드 뒤집기"
               >
                 ↻
