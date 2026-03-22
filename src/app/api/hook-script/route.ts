@@ -191,11 +191,15 @@ process.stdin.on("end", () => {
     let pullRequests = 0;
     const modelsSet = new Set();
 
+    // 2-pass: 먼저 tool_use ID → 명령어 매핑, 그 다음 tool_result로 성공 여부 확인
+    const commitToolIds = new Set();
+    const prToolIds = new Set();
+    const toolResults = new Map(); // tool_use_id → success boolean
+
     for (const line of lines) {
       try {
         const entry = JSON.parse(line);
 
-        // 토큰 사용량 집계 (assistant 메시지)
         if (entry.type === "assistant") {
           const usage = entry.message && entry.message.usage;
           const model = entry.message && entry.message.model;
@@ -213,28 +217,27 @@ process.stdin.on("end", () => {
           }
           if (model) modelsSet.add(model);
 
-          // Bash 도구 호출에서 git commit / gh pr 감지
           const content = entry.message && entry.message.content;
           if (Array.isArray(content)) {
             for (const block of content) {
-              if (block.type === "tool_use" && block.name === "Bash") {
+              if (block.type === "tool_use" && block.name === "Bash" && block.id) {
                 const cmd = (block.input && block.input.command) || "";
-                if (/git\\s+commit/i.test(cmd)) commits++;
-                if (/gh\\s+pr\\s+create/i.test(cmd)) pullRequests++;
+                if (/git\\s+commit/i.test(cmd)) commitToolIds.add(block.id);
+                if (/gh\\s+pr\\s+create/i.test(cmd)) prToolIds.add(block.id);
               }
             }
           }
         }
 
-        // tool_result에서 성공한 git commit 확인 (실패한 건 카운트 제외)
+        // tool_result: exit code 0 = 성공
         if (entry.type === "tool" && entry.message && entry.message.content) {
           const tc = entry.message.content;
           if (Array.isArray(tc)) {
             for (const block of tc) {
-              if (block.type === "tool_result" && typeof block.content === "string") {
-                if (/^\\[main |^\\[master |^\\[HEAD/.test(block.content)) {
-                  // git commit 성공 결과 — 이미 위에서 카운트했으므로 스킵
-                }
+              if (block.tool_use_id) {
+                // exit code 0이면 성공 (에러 없음 = 성공)
+                const isError = block.is_error === true;
+                toolResults.set(block.tool_use_id, !isError);
               }
             }
           }
@@ -242,12 +245,20 @@ process.stdin.on("end", () => {
       } catch {}
     }
 
+    // 성공한 tool_use만 카운트
+    for (const id of commitToolIds) {
+      if (toolResults.get(id) !== false) commits++;
+    }
+    for (const id of prToolIds) {
+      if (toolResults.get(id) !== false) pullRequests++;
+    }
+
     const totalTokens = totalInput + totalOutput + totalCacheCreate + totalCacheRead;
     if (totalTokens === 0) process.exit(0);
 
     // Delta 계산: resumed 세션은 이전 제출분을 빼고 새 사용량만 제출
     const cache = loadSessionCache();
-    const prev = (sessionId && cache[sessionId]) || { inp: 0, out: 0, cw: 0, cr: 0, cost: 0, n: 0 };
+    const prev = (sessionId && cache[sessionId]) || { inp: 0, out: 0, cw: 0, cr: 0, cost: 0, commits: 0, prs: 0, n: 0 };
 
     const deltaInput = Math.max(0, totalInput - prev.inp);
     const deltaOutput = Math.max(0, totalOutput - prev.out);
@@ -256,11 +267,14 @@ process.stdin.on("end", () => {
     const deltaCost = Math.max(0, totalCost - prev.cost);
     const deltaTotal = deltaInput + deltaOutput + deltaCacheCreate + deltaCacheRead;
 
-    if (deltaTotal <= 0) process.exit(0);
+    const deltaCommits = Math.max(0, commits - (prev.commits || 0));
+    const deltaPRs = Math.max(0, pullRequests - (prev.prs || 0));
+
+    if (deltaTotal <= 0 && deltaCommits <= 0 && deltaPRs <= 0) process.exit(0);
 
     // 캐시 업데이트 (제출 전에 저장 — 실패 시 큐에서 재시도)
     if (sessionId) {
-      cache[sessionId] = { inp: totalInput, out: totalOutput, cw: totalCacheCreate, cr: totalCacheRead, cost: totalCost, n: prev.n + 1, ts: Date.now() };
+      cache[sessionId] = { inp: totalInput, out: totalOutput, cw: totalCacheCreate, cr: totalCacheRead, cost: totalCost, commits: commits, prs: pullRequests, n: prev.n + 1, ts: Date.now() };
       saveSessionCache(cache);
     }
 
@@ -277,8 +291,8 @@ process.stdin.on("end", () => {
       cache_read_tokens: deltaCacheRead,
       total_tokens: deltaTotal,
       total_cost: Math.round(deltaCost * 100) / 100,
-      commits: commits,
-      pull_requests: pullRequests,
+      commits: deltaCommits,
+      pull_requests: deltaPRs,
       models_used: Array.from(modelsSet),
     });
 
