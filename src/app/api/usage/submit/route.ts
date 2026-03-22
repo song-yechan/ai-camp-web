@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { checkAndAwardBadges } from "@/lib/badges";
 
 export async function POST(request: NextRequest) {
   // 1. Extract Bearer token
@@ -59,24 +60,40 @@ export async function POST(request: NextRequest) {
 
     const userId = user.id;
 
-    // 4. Check for existing usage_log row for this user + date
-    const { data: existing, error: fetchError } = await supabase
+    // 4. INSERT first — on unique constraint violation, fall back to UPDATE
+    const { error: insertError } = await supabase
       .from("usage_logs")
-      .select("id, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost, sessions_count, commits, pull_requests")
-      .eq("user_id", userId)
-      .eq("date", date)
-      .maybeSingle();
+      .insert({
+        user_id: userId,
+        date,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        cache_creation_tokens: cacheCreationTokens,
+        cache_read_tokens: cacheReadTokens,
+        total_cost: totalCost,
+        commits,
+        pull_requests: pullRequests,
+        sessions_count: 1,
+        synced_at: new Date().toISOString(),
+      });
 
-    if (fetchError) {
-      console.error("usage/submit fetch error:", fetchError);
-      return NextResponse.json(
-        { error: "Database error" },
-        { status: 500 }
-      );
-    }
+    if (insertError?.code === "23505") {
+      // 5. Unique constraint violation — row already exists, fetch and add
+      const { data: existing, error: fetchError } = await supabase
+        .from("usage_logs")
+        .select("id, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost, sessions_count, commits, pull_requests")
+        .eq("user_id", userId)
+        .eq("date", date)
+        .single();
 
-    if (existing) {
-      // 5. UPDATE: add delta values to existing row
+      if (fetchError || !existing) {
+        console.error("usage/submit fetch error:", fetchError);
+        return NextResponse.json(
+          { error: "Database error" },
+          { status: 500 }
+        );
+      }
+
       const { error: updateError } = await supabase
         .from("usage_logs")
         .update({
@@ -99,33 +116,20 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-    } else {
-      // 6. INSERT: create new row with sessions_count = 1
-      const { error: insertError } = await supabase
-        .from("usage_logs")
-        .insert({
-          user_id: userId,
-          date,
-          input_tokens: inputTokens,
-          output_tokens: outputTokens,
-          cache_creation_tokens: cacheCreationTokens,
-          cache_read_tokens: cacheReadTokens,
-          total_cost: totalCost,
-          commits,
-          pull_requests: pullRequests,
-          sessions_count: 1,
-        });
-
-      if (insertError) {
-        console.error("usage/submit insert error:", insertError);
-        return NextResponse.json(
-          { error: "Failed to insert usage log" },
-          { status: 500 }
-        );
-      }
+    } else if (insertError) {
+      console.error("usage/submit insert error:", insertError);
+      return NextResponse.json(
+        { error: "Failed to insert usage log" },
+        { status: 500 }
+      );
     }
 
-    // 7. Success
+    // 7. Badge check (non-blocking)
+    checkAndAwardBadges(supabase, userId).catch((err) =>
+      console.error("Badge check failed:", err)
+    );
+
+    // 8. Success
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/usage/submit failed:", err);

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { signSession } from "@/lib/session";
 
 function generateApiToken(): string {
   return `aicamp_${crypto.randomBytes(32).toString("hex")}`;
@@ -41,6 +42,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${appUrl}/auth?error=${error || "no_code"}`,
     );
+  }
+
+  // CSRF state validation
+  const stateParam = request.nextUrl.searchParams.get("state");
+  const stateCookie = request.cookies.get("oauth-state")?.value;
+
+  if (!stateParam || !stateCookie || stateParam !== stateCookie) {
+    return NextResponse.redirect(`${appUrl}/auth?error=state_mismatch`);
   }
 
   // Exchange code for access token
@@ -132,12 +141,21 @@ export async function GET(request: NextRequest) {
   const redirectUrl = isNewUser ? `${appUrl}/onboarding` : appUrl;
   const response = NextResponse.redirect(redirectUrl);
 
-  response.cookies.set("ai-camp-session", user.id, {
+  response.cookies.set("ai-camp-session", signSession(user.id), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days
+  });
+
+  // Clear the OAuth state cookie
+  response.cookies.set("oauth-state", "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
   });
 
   return response;

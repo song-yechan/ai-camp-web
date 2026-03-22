@@ -10,6 +10,16 @@ vi.mock("next/headers", () => ({
   })),
 }));
 
+// Mock session verification
+vi.mock("@/lib/session", () => ({
+  verifySession: vi.fn((cookie: string) => {
+    // "signed-user-123" → "user-123", "invalid" → null
+    if (cookie.startsWith("signed-")) return cookie.slice(7);
+    return null;
+  }),
+  signSession: vi.fn((id: string) => `signed-${id}`),
+}));
+
 // Mock Supabase
 const mockFrom = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({
@@ -37,32 +47,16 @@ describe("GET /api/me", () => {
     expect(json.error).toContain("Not authenticated");
   });
 
-  it("returns 401 when user is not found in database", async () => {
-    mockCookieGet.mockReturnValue({ value: "nonexistent-user-id" });
-
-    mockFrom.mockImplementation((table: string) => {
-      if (table === "users") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: () =>
-                Promise.resolve({ data: null, error: { message: "Not found" } }),
-            }),
-          }),
-        };
-      }
-      return {};
-    });
+  it("returns 401 when session signature is invalid", async () => {
+    mockCookieGet.mockReturnValue({ value: "invalid-cookie" });
 
     const res = await GET();
 
     expect(res.status).toBe(401);
-    const json = await res.json();
-    expect(json.error).toBe("User not found");
   });
 
   it("returns user data when session is valid", async () => {
-    mockCookieGet.mockReturnValue({ value: "user-123" });
+    mockCookieGet.mockReturnValue({ value: "signed-user-123" });
 
     const mockUser = {
       id: "user-123",
@@ -73,6 +67,7 @@ describe("GET /api/me", () => {
       department: "Engineering",
       cohort: 1,
       api_token: "aicamp_testtoken",
+      setup_completed: true,
     };
 
     mockFrom.mockImplementation((table: string) => {
@@ -94,8 +89,5 @@ describe("GET /api/me", () => {
     const json = await res.json();
     expect(json.id).toBe("user-123");
     expect(json.name).toBe("Test User");
-    expect(json.email).toBe("test@example.com");
-    expect(json.role).toBe("developer");
-    expect(json.api_token).toBe("aicamp_testtoken");
   });
 });

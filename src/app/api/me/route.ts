@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { verifySession } from "@/lib/session";
 
 export async function GET() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get("ai-camp-session")?.value;
+  const sessionCookie = cookieStore.get("ai-camp-session")?.value;
+
+  if (!sessionCookie) {
+    return NextResponse.json(
+      { error: "Not authenticated" },
+      { status: 401 },
+    );
+  }
+
+  const sessionId = verifySession(sessionCookie);
 
   if (!sessionId) {
     return NextResponse.json(
-      { error: "Not authenticated" },
+      { error: "Invalid session" },
       { status: 401 },
     );
   }
