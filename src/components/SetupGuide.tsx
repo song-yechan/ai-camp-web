@@ -85,10 +85,19 @@ function CliSetupCard({
   );
 }
 
-export default function SetupGuide() {
+interface SetupGuideProps {
+  onCliTypeChange?: (cliType: CliType) => void;
+}
+
+export default function SetupGuide({ onCliTypeChange }: SetupGuideProps = {}) {
   const [user, setUser] = useState<UserMe | null>(null);
   const [loading, setLoading] = useState(true);
-  const [cliType, setCliType] = useState<CliType>("claude");
+  const [cliType, setCliTypeInternal] = useState<CliType>("claude");
+
+  function setCliType(value: CliType) {
+    setCliTypeInternal(value);
+    onCliTypeChange?.(value);
+  }
 
   useEffect(() => {
     fetch("/api/me")
@@ -172,10 +181,6 @@ export default function SetupGuide() {
 
   const codexInstructions = [
     {
-      step: "0.",
-      content: <>Codex CLI가 아직 없다면: <code className="rounded bg-camp-surface px-1.5 py-0.5 font-mono text-xs text-camp-accent">npm install -g @openai/codex</code></>,
-    },
-    {
       step: "1.",
       content: (
         <>
@@ -241,7 +246,7 @@ export default function SetupGuide() {
           title="Codex 사용량 추적 설정"
           description="터미널에 아래 한 줄만 붙여넣기하세요:"
           curlCommand={codexCommand}
-          prerequisite="사전 준비: Codex CLI 설치 (npm install -g @openai/codex). 아래 명령어가 Hooks 기능 활성화까지 자동으로 처리합니다."
+          prerequisite="Codex CLI가 필요합니다. 아직 없다면 먼저 터미널에서 npm install -g @openai/codex 를 실행하세요."
           instructions={codexInstructions}
           note="한 번만 하면 됩니다. 이후 Codex를 쓸 때마다 사용량이 자동으로 리더보드에 반영됩니다."
         />

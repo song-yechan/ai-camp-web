@@ -28,7 +28,7 @@ export async function GET() {
 
     const { data: user, error } = await supabase
       .from("users")
-      .select("id, name, email, avatar_url, role, department, cohort, api_token, setup_completed")
+      .select("id, name, email, avatar_url, role, department, cohort, api_token, setup_completed, cli_type")
       .eq("id", sessionId)
       .single();
 
