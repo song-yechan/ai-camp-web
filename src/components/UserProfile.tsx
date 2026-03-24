@@ -3,10 +3,9 @@
 import { useState } from "react";
 import CohortBadge from "@/components/ui/CohortBadge";
 import CliBadge from "@/components/ui/CliBadge";
-import BadgeGrid from "@/components/BadgeGrid";
 import CountUp from "./CountUp";
 import { formatNumber } from "@/lib/format";
-import { calculateTotalTokens, calculateXP, getLevel } from "@/lib/level-system";
+import { calculateTotalTokens, calculateXP, getLevel, LEVELS } from "@/lib/level-system";
 import type { UserData } from "@/lib/types";
 
 interface UserProfileProps {
@@ -73,24 +72,14 @@ function TotalTokens({ user }: { user: UserProfileProps["user"] }) {
   );
 }
 
-function LevelCard({
-  user,
-  allBadges = [],
-  earnedBadges = [],
-}: {
-  user: UserProfileProps["user"];
-  allBadges?: UserProfileProps["allBadges"];
-  earnedBadges?: UserProfileProps["earnedBadges"];
-}) {
+function LevelCard({ user }: { user: UserProfileProps["user"] }) {
   const totalTokens = calculateTotalTokens(user);
   const xp = calculateXP(totalTokens, user.role);
   const level = getLevel(xp);
-  const [showBadges, setShowBadges] = useState(false);
+  const [showCollection, setShowCollection] = useState(false);
 
-  const earnedCount = allBadges.filter((b) =>
-    earnedBadges.some((eb) => eb.badge_type === b.type)
-  ).length;
-  const totalCount = allBadges.length;
+  const collectedCount = level.level;
+  const totalLevels = LEVELS.length;
 
   return (
     <div className="glass rounded-xl p-4">
@@ -122,36 +111,74 @@ function LevelCard({
           ) : (
             <span className="text-[10px] text-camp-accent">MAX LEVEL</span>
           )}
-          {totalCount > 0 && (
-            <button
-              onClick={() => setShowBadges(true)}
-              className="mt-2 flex items-center gap-1.5 cursor-pointer rounded-lg bg-camp-surface px-3 py-1.5 text-xs font-medium text-camp-text-secondary transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
-            >
-              🏆 뱃지 {earnedCount}/{totalCount}
-            </button>
-          )}
+          <button
+            onClick={() => setShowCollection(true)}
+            className="mt-2 flex cursor-pointer items-center gap-2 rounded-lg border border-camp-accent/30 bg-camp-accent/10 px-3 py-2 transition-all hover:bg-camp-accent/20"
+          >
+            <span className="flex -space-x-1.5">
+              {LEVELS.slice(Math.max(0, level.level - 3), level.level).map((lv) => (
+                <img key={lv.level} src={lv.icon} alt={lv.name} width={20} height={20} className="size-5 rounded-full ring-1 ring-camp-bg" style={{ imageRendering: "pixelated" }} />
+              ))}
+            </span>
+            <span className="text-xs font-semibold text-camp-accent">
+              도감 {collectedCount}/{totalLevels}
+            </span>
+          </button>
         </div>
       </div>
 
-      {showBadges && (
+      {showCollection && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={() => setShowBadges(false)}
+          onClick={() => setShowCollection(false)}
         >
           <div
             className="relative mx-4 max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-camp-border bg-camp-bg p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-camp-text">🏆 뱃지 컬렉션</h2>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-camp-text">포켓몬 도감</h2>
+                <p className="text-xs text-camp-text-secondary">{collectedCount}종 발견 / {totalLevels}종</p>
+              </div>
               <button
-                onClick={() => setShowBadges(false)}
-                className="cursor-pointer text-camp-text-secondary hover:text-camp-text"
+                onClick={() => setShowCollection(false)}
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-camp-text-secondary transition-colors hover:bg-camp-surface-hover hover:text-camp-text"
               >
-                ✕
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
-            <BadgeGrid allBadges={allBadges} earnedBadges={earnedBadges} />
+            <div className="grid grid-cols-5 gap-3 sm:grid-cols-8">
+              {LEVELS.map((lv) => {
+                const collected = lv.level <= level.level;
+                return (
+                  <div
+                    key={lv.level}
+                    className={`flex flex-col items-center gap-1 rounded-xl p-2 transition-all ${
+                      collected
+                        ? "bg-camp-surface"
+                        : "bg-camp-surface/30 opacity-30 grayscale"
+                    }`}
+                    title={collected ? `Lv.${lv.level} ${lv.name}` : "???"}
+                  >
+                    <img
+                      src={lv.icon}
+                      alt={collected ? lv.name : "???"}
+                      width={48}
+                      height={48}
+                      className="size-12"
+                      style={{ imageRendering: "pixelated" }}
+                    />
+                    <span className={`text-center text-[9px] font-medium leading-tight ${collected ? "text-camp-text-secondary" : "text-camp-text-muted"}`}>
+                      {collected ? lv.name : "???"}
+                    </span>
+                    <span className={`text-[8px] font-mono ${collected ? "text-camp-accent" : "text-camp-text-muted"}`}>
+                      Lv.{lv.level}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -256,7 +283,7 @@ export default function UserProfile({ user, allBadges, earnedBadges }: UserProfi
       </div>
 
       {/* Level card */}
-      <LevelCard user={user} allBadges={allBadges} earnedBadges={earnedBadges} />
+      <LevelCard user={user} />
 
       {/* Token breakdown */}
       <TotalTokens user={user} />
