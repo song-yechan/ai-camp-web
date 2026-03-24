@@ -20,9 +20,9 @@ export default function Home() {
             <HeroTitle />
 
             <p className="max-w-md text-base leading-relaxed text-camp-text-secondary">
-              AB180 구성원들의 Claude Code 사용량을 실시간으로 확인하세요.
+              AB180 구성원들의 토큰 사용량을 확인하세요.
               <br className="hidden sm:block" />
-              더 많이 쓸수록, 더 빠르게 성장합니다.
+              AI와 함께 일하는 시간이 경쟁력이 됩니다.
             </p>
           </div>
 
