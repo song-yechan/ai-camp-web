@@ -74,7 +74,9 @@ const DotGrid: React.FC<DotGridProps> = ({
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     const ctx = canvas.getContext("2d");
-    if (ctx) ctx.scale(dpr, dpr);
+    if (ctx) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
 
     const cols = Math.floor((width + gap) / (dotSize + gap));
     const rows = Math.floor((height + gap) / (dotSize + gap));
@@ -180,12 +182,37 @@ const DotGrid: React.FC<DotGridProps> = ({
     return () => cancelAnimationFrame(rafId);
   }, [proximity, baseColor, activeRgb, baseRgb, circlePath, returnSpeed]);
 
-  // Build grid on mount + resize
+  // Build grid on mount + resize + DPR change + visibility change
   useEffect(() => {
     buildGrid();
+
+    // 화면 크기 변경 감지
     const ro = new ResizeObserver(buildGrid);
     if (wrapperRef.current) ro.observe(wrapperRef.current);
-    return () => ro.disconnect();
+
+    // devicePixelRatio 변경 감지 (모니터 연결/해제)
+    let dprMedia: MediaQueryList | null = null;
+    const watchDpr = () => {
+      dprMedia = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      dprMedia.addEventListener("change", handleDprChange, { once: true });
+    };
+    const handleDprChange = () => {
+      buildGrid();
+      watchDpr();
+    };
+    watchDpr();
+
+    // 잠자기 후 복귀 감지
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") buildGrid();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      ro.disconnect();
+      dprMedia?.removeEventListener("change", handleDprChange);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [buildGrid]);
 
   // Mouse / click handlers
