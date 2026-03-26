@@ -10,7 +10,7 @@ import { formatNumber } from "@/lib/format";
 import { calculateTotalTokens, calculateXP, getLevel } from "@/lib/level-system";
 
 function getLevelInfo(entry: LeaderboardEntry) {
-  const totalTokens = calculateTotalTokens(entry);
+  const totalTokens = entry.all_time_tokens ?? calculateTotalTokens(entry);
   const xp = calculateXP(totalTokens, entry.role);
   const level = getLevel(xp);
   return { icon: level.icon, name: level.name, level: level.level, xp };

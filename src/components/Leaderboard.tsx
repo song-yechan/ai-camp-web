@@ -29,7 +29,8 @@ const NON_DEV_DEPARTMENTS = [
 ];
 
 function getLevelInfo(entry: LeaderboardEntry) {
-  const totalTokens = calculateTotalTokens(entry);
+  // 레벨은 항상 전체 누적 토큰 기준 (기간 필터와 무관)
+  const totalTokens = entry.all_time_tokens ?? calculateTotalTokens(entry);
   const xp = calculateXP(totalTokens, entry.role);
   const level = getLevel(xp);
   return { icon: level.icon, name: level.name, level: level.level, xp };

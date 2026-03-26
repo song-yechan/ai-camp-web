@@ -36,6 +36,7 @@ export interface LeaderboardEntry {
   max_streak?: number;
   cohort?: number | null;
   cli_type?: string | null;
+  all_time_tokens?: number;
   badges?: { badge_type: string; earned_at: string }[];
 }
 
