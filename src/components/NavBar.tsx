@@ -39,11 +39,15 @@ export default function NavBar() {
             avatar_url: data.avatar_url,
             setup_completed: data.setup_completed,
           });
+          // 온보딩 미완료(department 없음) 시 강제 리다이렉트
+          if (!data.department && pathname !== "/onboarding" && !pathname.startsWith("/auth")) {
+            router.replace("/onboarding");
+          }
         }
       })
       .catch(() => setUser(null))
       .finally(() => setChecked(true));
-  }, []);
+  }, [pathname, router]);
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
