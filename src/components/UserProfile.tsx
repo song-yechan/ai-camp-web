@@ -175,8 +175,11 @@ function LevelCard({ user }: { user: UserProfileProps["user"] }) {
                       alt={collected ? lv.name : "???"}
                       width={64}
                       height={64}
-                      className={`size-16 ${collected ? "" : "brightness-0 opacity-40"}`}
-                      style={{ imageRendering: "pixelated" }}
+                      className={`size-16 ${collected ? "" : ""}`}
+                      style={{
+                        imageRendering: "pixelated",
+                        ...(collected ? {} : { filter: "brightness(0) invert(0.45)" }),
+                      }}
                     />
                     <span className={`text-center text-xs font-semibold leading-tight ${collected ? "text-camp-text" : "text-camp-text-muted"}`}>
                       {collected ? lv.name : "???"}
