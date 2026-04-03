@@ -258,22 +258,45 @@ function selfUpdate(apiUrl) {
             const urlPath = path.join(configDir, "api_url");
             fs.writeFileSync(urlPath, canonicalUrl);
           }
-          // hooks.json 정비
+          // hooks.json 정비 + PostToolUse 자동 등록
           const codexDir = path.join(os.homedir(), ".codex");
           const hooksPath = path.join(codexDir, "hooks.json");
           if (fs.existsSync(hooksPath)) {
-            const hooks = JSON.parse(fs.readFileSync(hooksPath, "utf8"));
+            const raw = JSON.parse(fs.readFileSync(hooksPath, "utf8"));
             let changed = false;
-            if (Array.isArray(hooks)) {
-              for (const entry of hooks) {
-                const isAiCamp = entry.command && entry.command.includes("ai-camp/report-usage-codex");
-                if (isAiCamp && entry.matcher !== ".*") {
-                  entry.matcher = ".*";
-                  changed = true;
+            // New format: { hooks: { Stop: [...], SessionStart: [...] } }
+            const s = raw.hooks ? raw : { hooks: raw };
+            if (!s.hooks) s.hooks = {};
+            const hookPath = path.join(os.homedir(), ".config", "ai-camp", "report-usage-codex.js");
+            const cmd = "node " + hookPath;
+
+            // Ensure PostToolUse hook exists
+            if (!s.hooks.PostToolUse) s.hooks.PostToolUse = [];
+            const hasPTU = s.hooks.PostToolUse.some(function(h) {
+              return h.hooks && h.hooks.some(function(hh) {
+                return hh.command && hh.command.includes("ai-camp/report-usage-codex");
+              });
+            });
+            if (!hasPTU) {
+              s.hooks.PostToolUse.push({ matcher: null, hooks: [{ type: "command", command: cmd, timeout: 5 }] });
+              changed = true;
+            }
+
+            // Fix matcher on existing hooks
+            for (const hookType of ["Stop", "SessionStart", "PostToolUse"]) {
+              if (!s.hooks[hookType]) continue;
+              for (const entry of s.hooks[hookType]) {
+                if (entry.hooks) {
+                  for (const hh of entry.hooks) {
+                    if (hh.command && hh.command.includes("ai-camp/report-usage-codex") && entry.matcher !== null && entry.matcher !== ".*") {
+                      entry.matcher = null;
+                      changed = true;
+                    }
+                  }
                 }
               }
             }
-            if (changed) fs.writeFileSync(hooksPath, JSON.stringify(hooks, null, 2));
+            if (changed) fs.writeFileSync(hooksPath, JSON.stringify(raw.hooks ? raw : s, null, 2));
           }
           fs.writeFileSync(lastUpdateFile, today);
         } catch {}
